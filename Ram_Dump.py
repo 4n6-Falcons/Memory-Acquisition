@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from sys import platform, exit
-from subprocess import Popen
+#from subprocess import Popen
+from subprocess import run #Using run method for better RAM Management
 from os import path, makedirs, getcwd
 
 # get the current working directory
@@ -16,15 +17,20 @@ def dump_ram():
     # Check the current operating system
     if platform.startswith('win'):
         # Execute the Windows RAM dump code
-        process = Popen(['./tools/winpmem_mini_x64_rc2.exe', file_path])
-        process.wait()
+        """process = Popen(['./tools/winpmem_mini_x64_rc2.exe', file_path])
+        process.wait()"""
+        run(['./tools/winpmem_mini_x64_rc2.exe', file_path], check=True)
+        
     elif platform.startswith('linux'):
         # Execute the Linux RAM dump code
-        process = Popen(['./tools/avml-minimal', file_path])
-        process.wait()
+        """process = Popen(['./tools/avml-minimal', file_path])
+        process.wait()"""
+        run(['./tools/avml-minimal', file_path], check=True)
+        
     elif platform.startswith('darwin'):
         # Execute the Mac RAM dump code
         pass
+    
     else:
         print("Unsupported operating system")
         exit(1)
