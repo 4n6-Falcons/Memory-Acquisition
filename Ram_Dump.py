@@ -11,8 +11,15 @@ def dump_ram():
     # create the "Output" folder if it doesn't exist
     if not path.exists("Output"):
         makedirs("Output")
+#----------------------------------------------------------------------------------
+    # create a file name with current date and time
+    current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    file_name = f"mem_{current_time}.raw"
+#----------------------------------------------------------------------------------    
+   
     # create a file path relative to the current working directory
-    file_path = path.join(cwd, "Output/mem.raw")
+    #file_path = path.join(cwd, "Output/mem.raw")
+    file_path = path.join(cwd, "Output", file_name) #File path with date and time stamp
         
     # Check the current operating system
     if platform.startswith('win'):
