@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 from sys import platform, exit
 from subprocess import run
-from os import path, makedirs, getcwd
+from os import makedirs, getcwd
 from datetime import datetime
 
 # get the current working directory
@@ -16,7 +16,7 @@ def dump_ram():
     file_name = f"memdump_{current_time}.raw" 
 
     # create a file path relative to the current working directory
-    file_path = path.join(cwd, "Output", file_name) #File path with date and time stamp
+    file_path = f"{cwd}/Output/{file_name}" #File path with date and time stamp
         
     # Check the current operating system
     if platform.startswith('win'):
