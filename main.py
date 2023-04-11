@@ -1,4 +1,5 @@
 import customtkinter as ctk
+from tkinter import messagebox
 from Ram_Dump import dump_ram, output
 
 # System Settings
@@ -48,10 +49,16 @@ class App(ctk.CTk):
         # Next button
         self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="Disabled")
         self.nextButton.grid(row=0, column=1, padx=10)
-
+        # Defined Capture Button
+        def capture_clicked():
+            self.captureButton.configure(state="disable")
+            dump_ram()
+            messagebox.showinfo("Message", "Process Completed!")  # display a popup message
+            
         # Capture button
-        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=dump_ram)
+        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=capture_clicked)
         self.captureButton.grid(row=0, column=0, padx=10)
+        
 
 if __name__ == "__main__":
     app = App()
