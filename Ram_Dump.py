@@ -1,23 +1,24 @@
 #!/usr/bin/env python
 from sys import platform, exit
 from subprocess import run
-from os import path, makedirs, getcwd
+from os import makedirs, getcwd
 from datetime import datetime
 
 # get the current working directory
 cwd = getcwd()
+output = f"{cwd}\\Output\\"
 
 def dump_ram():
     # create the "Output" folder if it doesn't exist
     makedirs("Output", exist_ok=True)
-    
+
     # create a file name with current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"memdump_{current_time}.raw" 
+    file_name = f"memdump_{current_time}.raw"
 
     # create a file path relative to the current working directory
-    file_path = path.join(cwd, "Output", file_name) #File path with date and time stamp
-        
+    file_path = output + file_name #File path with date and time stamp
+    
     # Check the current operating system
     if platform.startswith('win'):
         # Execute the Windows RAM dump code
@@ -35,11 +36,4 @@ def dump_ram():
         print("Unsupported operating system")
         exit(1)
 
-def main():
-    # Start the process to collect the RAM dump
-    print("Starting RAM dump collection...")
-    dump_ram()
-    print("RAM dump saved")
-
-if __name__ == "__main__":
-    main()
+    return file_path
