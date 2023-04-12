@@ -28,42 +28,36 @@ class window1(ctk.CTk):
         self.destEntry.insert(0, output)
         self.destEntry.configure(state="readonly")
 
-        # --------------------------------------------------------------------------------------------------
-        # Status Lable
-        #self.statusLable = ctk.CTkLabel(self, text="Status:")
-        #self.statusLable.pack(padx=10, anchor="nw")
-        # --------------------------------------------------------------------------------------------------
-
         # Progress bar
         self.progress = ctk.CTkProgressBar(self, orientation="horizontal", mode="indeterminate", height=20)
         self.progress.pack(padx=10, pady=10, fill="x")
 
         # Frame for Buttons
         self.button_frame = ctk.CTkFrame(self)
-        self.button_frame.pack(padx=10, pady=10, anchor="ne")
+        self.button_frame.pack(side="bottom", padx=10, pady=10, anchor="ne")
 
         # Close button
         self.closeButton = ctk.CTkButton(self.button_frame, text="Close")
         self.closeButton.grid(row=0, column=2, padx=10)
         
-        def next_clicked():
-            self.nextButton.configure(state="disable")
-            next_wind = window2()
-            next_wind.mainloop()
-
         # Next button
-        self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="Disabled", command=next_clicked)
+        self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="disabled", command=self.next_clicked)
         self.nextButton.grid(row=0, column=1, padx=10)
-
-        def capture_clicked():
-            self.captureButton.configure(state="disable")
-            dump_ram()
-            messagebox.showinfo("Message", "Process Completed!")
-            self.nextButton.configure(state="enable") # display a popup message
             
         # Capture button
-        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=capture_clicked)
+        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=self.capture_clicked)
         self.captureButton.grid(row=0, column=0, padx=10)
+
+    def next_clicked(self):
+        self.nextButton.configure(state="disabled")
+        next_wind = window2()
+        next_wind.mainloop()
+
+    def capture_clicked(self):
+        self.captureButton.configure(state="disabled")
+        file_path = dump_ram()
+        messagebox.showinfo("Message", "Process Completed!") # display a popup message
+        self.nextButton.configure(state="normal")
 
 #Created Window2
 class window2(ctk.CTk):
@@ -166,7 +160,7 @@ class window2(ctk.CTk):
         self.finishbutton_frame.pack(padx=10, pady=10, anchor="ne")
         
         self.finishButton = ctk.CTkButton(self.finishbutton_frame, text="Finish!")
-        self.finishButton.grid(row=0, column=2, padx=10
+        self.finishButton.grid(row=0, column=2, padx=10)
         
 if __name__ == "__main__":
     app = window1()
