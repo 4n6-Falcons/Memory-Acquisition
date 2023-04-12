@@ -7,7 +7,7 @@ ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
 # Created Window1
-class window1(ctk.CTk):
+class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
@@ -18,68 +18,38 @@ class window1(ctk.CTk):
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False,False)
 
+        # --------------------------------------------------Window1 Frame-----------------------------------------------------------
+
+        self.Window1 = ctk.CTkFrame(self, fg_color="transparent")
+        self.Window1.pack(fill="x", anchor="nw", padx=10)
+
         # Destination Folder Lable
-        self.destLable = ctk.CTkLabel(self, text="Destination Folder:")
-        self.destLable.pack(anchor="nw", padx=10)
+        self.destLable = ctk.CTkLabel(self.Window1, text="Destination Folder:")
+        self.destLable.pack(anchor="nw")
 
         # Destination Folder Entry
-        self.destEntry = ctk.CTkEntry(self)
-        self.destEntry.pack(fill="x", padx=10, pady=10)
+        self.destEntry = ctk.CTkEntry(self.Window1)
+        self.destEntry.pack(fill="x", pady=10)
         self.destEntry.insert(0, output)
         self.destEntry.configure(state="readonly")
 
         # Progress bar
-        self.progress = ctk.CTkProgressBar(self, orientation="horizontal", mode="indeterminate", height=20)
-        self.progress.pack(padx=10, pady=10, fill="x")
+        self.progress = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="indeterminate", height=20)
+        self.progress.pack(pady=10, fill="x")
 
-        # Frame for Buttons
-        self.button_frame = ctk.CTkFrame(self, fg_color="transparent")
-        self.button_frame.pack(side="bottom", padx=10, pady=10, anchor="ne")
-
-        # Close button
-        self.closeButton = ctk.CTkButton(self.button_frame, text="Close")
-        self.closeButton.grid(row=0, column=2, padx=10)
+        # --------------------------------------------------Window2 Frame-----------------------------------------------------------
         
-        # Next button
-        self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="disabled", command=self.next_clicked)
-        self.nextButton.grid(row=0, column=1, padx=10)
-            
-        # Capture button
-        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=self.capture_clicked)
-        self.captureButton.grid(row=0, column=0, padx=10)
+        self.Window2 = ctk.CTkFrame(self, fg_color="transparent")
 
-    def next_clicked(self):
-        self.nextButton.configure(state="disabled")
-        next_wind = window2()
-        next_wind.mainloop()
-
-    def capture_clicked(self):
-        self.captureButton.configure(state="disabled")
-        file_path = dump_ram()
-        messagebox.showinfo("Message", "Process Completed!") # display a popup message
-        self.nextButton.configure(state="normal")
-
-#Created Window2
-class window2(ctk.CTk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        
-        appwidth, appheight = 850, 550 #Temporary
-        
-        self.title("Evidence Information")
-        self.iconbitmap("Evidence-Folder Icon.ico")
-        self.geometry(f"{appwidth}x{appheight}")
-        self.resizable(False,False)
-        
         #------------------- Case Details Session --------------------------------------------------
-        
+
         # Case Details Lable
-        self.case_detail = ctk.CTkLabel(self, text="Case Details:")
-        self.case_detail.pack(anchor="nw", padx=10)
-        
+        self.case_detail = ctk.CTkLabel(self.Window2, text="Case Details:")
+        self.case_detail.pack(anchor="nw")
+
         # Frame for Case details
-        self.casedetails = ctk.CTkFrame(self, fg_color="transparent")
-        self.casedetails.pack(padx=50, pady=10, anchor="nw")
+        self.casedetails = ctk.CTkFrame(self.Window2, fg_color="transparent")
+        self.casedetails.pack(padx=40, pady=10, anchor="nw")
 
         # Frame for Questions
         self.casequiz = ctk.CTkFrame(self.casedetails, fg_color="transparent")
@@ -110,12 +80,12 @@ class window2(ctk.CTk):
         #------------------- Examiner Details Session ----------------------------------------------
         
         # Examiner Details Lable
-        self.examiner_detail = ctk.CTkLabel(self, text="Examiner Details:")
-        self.examiner_detail.pack(anchor="nw", padx=10)
+        self.examiner_detail = ctk.CTkLabel(self.Window2, text="Examiner Details:")
+        self.examiner_detail.pack(anchor="nw")
         
         # Frame for Examiner details
-        self.examinerdetails = ctk.CTkFrame(self, fg_color="transparent")
-        self.examinerdetails.pack(padx=50, pady=10, anchor="nw")
+        self.examinerdetails = ctk.CTkFrame(self.Window2, fg_color="transparent")
+        self.examinerdetails.pack(padx=40, pady=10, anchor="nw")
         
         # Frame for Examiner Questions
         self.examinerquiz = ctk.CTkFrame(self.examinerdetails, fg_color="transparent")
@@ -148,8 +118,40 @@ class window2(ctk.CTk):
         
         self.examinerorg_holder = ctk.CTkEntry(self.examinerans)
         self.examinerorg_holder.pack(pady="5")
+
+        # --------------------------------------------------Button Frame-----------------------------------------------------------
+
+        # Frame for Buttons
+        self.button_frame = ctk.CTkFrame(self, fg_color="transparent")
+        self.button_frame.pack(side="bottom", pady=10, anchor="ne")
+
+        # Close button
+        self.closeButton = ctk.CTkButton(self.button_frame, text="Close")
+        self.closeButton.grid(row=0, column=2)
+        
+        # Next button
+        self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="disabled", command=self.next_clicked)
+        self.nextButton.grid(padx="10", row=0, column=1)
+            
+        # Capture button
+        self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=self.capture_clicked)
+        self.captureButton.grid(row=0, column=0)
+
+    def switch_frame(self):
+        self.Window1.pack_forget()
+        self.Window2.pack(padx=10, anchor="nw", fill="x")
+
+    def next_clicked(self):
+        self.nextButton.configure(state="disabled")
+        self.switch_frame()
+
+    def capture_clicked(self):
+        self.captureButton.configure(state="disabled")
+        file_path = dump_ram()
+        messagebox.showinfo("Message", "Process Completed!") # display a popup message
+        self.nextButton.configure(state="normal")
         
 if __name__ == "__main__":
-    app = window1()
+    app = App()
     # Runs the app
     app.mainloop()
