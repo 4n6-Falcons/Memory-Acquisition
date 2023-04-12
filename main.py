@@ -91,7 +91,7 @@ class window2(ctk.CTk):
         self.caseid.grid(row=0, column=0, padx=10)
         
         self.caseid_holder = ctk.CTkEntry(self.caseid_frame)
-        self.caseid_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.caseid_holder.grid(row=0, column=1, padx=10, pady=10)
         
         # Frame for Case Name
         self.casename_frame = ctk.CTkFrame(self)
@@ -101,7 +101,7 @@ class window2(ctk.CTk):
         self.casename.grid(row=0, column=0, padx=10)
         
         self.casename_holder = ctk.CTkEntry(self.casename_frame)
-        self.casename_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.casename_holder.grid(row=0, column=1, padx=10, pady=10)
         
         # Frame for Case Description
         self.casedesc_frame = ctk.CTkFrame(self)
@@ -111,7 +111,7 @@ class window2(ctk.CTk):
         self.casedesc.grid(row=0, column=0, padx=10)
         
         self.casedesc_holder = ctk.CTkEntry(self.casedesc_frame)
-        self.casedesc_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.casedesc_holder.grid(row=0, column=1, padx=10, pady=10)
         
         #------------------- Case Details Session --------------------------------------------------
         
@@ -129,7 +129,7 @@ class window2(ctk.CTk):
         self.examinername.grid(row=0, column=0, padx=10)
         
         self.examinername_holder = ctk.CTkEntry(self.examinername_frame)
-        self.examinername_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.examinername_holder.grid(row=0, column=1, padx=10, pady=10)
         
         # Frame for Examiner Phone Number
         self.examinerphone_frame = ctk.CTkFrame(self)
@@ -139,7 +139,7 @@ class window2(ctk.CTk):
         self.examinerphone.grid(row=0, column=0, padx=10)
         
         self.examinerphone_holder = ctk.CTkEntry(self.examinerphone_frame)
-        self.examinerphone_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.examinerphone_holder.grid(row=0, column=1, padx=10, pady=10)
         
         # Frame for Examiner Email ID
         self.examineremail_frame = ctk.CTkFrame(self)
@@ -149,7 +149,7 @@ class window2(ctk.CTk):
         self.examineremail.grid(row=0, column=0, padx=10)
         
         self.examineremail_holder = ctk.CTkEntry(self.examineremail_frame)
-        self.examineremail_holder.grid(row=0, column=1, padx=10, pady=10,)
+        self.examineremail_holder.grid(row=0, column=1, padx=10, pady=10)
         
         # Frame for Examiner Organization
         self.examinerorg_frame = ctk.CTkFrame(self)
@@ -159,7 +159,14 @@ class window2(ctk.CTk):
         self.examinerorg.grid(row=0, column=0, padx=10)
         
         self.examinerorg_holder = ctk.CTkEntry(self.examinerorg_frame)
-        self.examinerorg_holder.grid(row=0, column=1, padx=10, pady=10,)       
+        self.examinerorg_holder.grid(row=0, column=1, padx=10, pady=10)  
+        
+        # Frame for Finish Button
+        self.finishbutton_frame = ctk.CTkFrame(self)
+        self.finishbutton_frame.pack(padx=10, pady=10, anchor="ne")
+        
+        self.finishButton = ctk.CTkButton(self.finishbutton_frame, text="Finish!")
+        self.finishButton.grid(row=0, column=2, padx=10
         
 if __name__ == "__main__":
     app = window1()
