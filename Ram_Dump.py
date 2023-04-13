@@ -8,17 +8,18 @@ from datetime import datetime
 cwd = getcwd()
 output = f"{cwd}\\Output\\"
 
-def dump_ram():
-    # create the "Output" folder if it doesn't exist
+def get_dump_file_path():
+    """Create a file path with current date and time"""
     makedirs("Output", exist_ok=True)
-
-    # create a file name with current date and time
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     file_name = f"memdump_{current_time}.raw"
-
-    # create a file path relative to the current working directory
     file_path = output + file_name #File path with date and time stamp
-    
+    return file_path
+
+file_path = get_dump_file_path()
+
+def dump_ram():
+    """Dump the Contents of Ram to a file"""
     # Check the current operating system
     if platform.startswith('win'):
         # Execute the Windows RAM dump code
@@ -35,5 +36,3 @@ def dump_ram():
     else:
         print("Unsupported operating system")
         exit(1)
-
-    return file_path
