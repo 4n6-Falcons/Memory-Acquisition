@@ -4,7 +4,8 @@ from threading import Thread
 from os import path, remove
 import time
 from psutil import virtual_memory
-from Ram_Dump import dump_ram, output, file_path
+from Ram_Dump import dump_ram, output, get_dump_file_path
+import config
 
 # System Settings
 ctk.set_appearance_mode("System")
@@ -24,7 +25,6 @@ class App(ctk.CTk):
         self.resizable(False,False)
 
         self.total_ram = virtual_memory().total
-        self.reset = False
         # --------------------------------------------------Window1 Frame-----------------------------------------------------------
 
         self.Window1 = ctk.CTkFrame(self, fg_color="transparent")
@@ -171,10 +171,10 @@ class App(ctk.CTk):
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
         
     def progress(self):
-        if self.reset:
+        if config.reset:
             self.progress_bar.set(0)
         elif self.dump.is_alive():
-            current_size = path.getsize(file_path)
+            current_size = path.getsize(config.file_path)
             progress = current_size / self.total_ram
             if progress >= 0.9:
                 progress = 0.9
@@ -188,38 +188,40 @@ class App(ctk.CTk):
             messagebox.showinfo("Message", "Process Completed!") # display a popup message
             self.nextButton.configure(state="normal")
             self.cancelButton.grid_forget()
-            self.closeButton.grid(row=0, column=2)
+            self.closeButton.grid(row=0, column=2, padx=10)
             self.closeButton.configure(state="disabled")
     
     def capture_clicked(self):
         self.captureButton.configure(state="disabled")
+        config.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
-        self.dump = Thread(target=dump_ram)
+        config.file_path = get_dump_file_path()
+        self.dump = Thread(target=dump_ram, args=(config.file_path,))
         self.dump.start()
-        self.status.configure(text="Dumping..!, Please Wait...")
-        time.sleep(2)
+        self.status.configure(text="Dumping.., Please Wait...")
+        time.sleep(1)
         self.pro = Thread(target=self.progress)
         self.pro.start()
 
     def next_clicked(self):
-        self.nextButton.configure(state="disabled")
         self.switch_frame()
+        self.nextButton.grid_forget()
+        self.captureButton.grid_forget()
         self.closeButton.grid_forget()
         self.finishButton.grid(row=0, column=2, padx="10")
         
-    def cancel_clicked(self):                                             #This is not defined properly
+    def cancel_clicked(self):
         
         result = messagebox.askyesno("Confirmation", "Do you want to Cancel?")
         if result:
             # Stop any running Processes
-            self.reset = True
-            #if self.dump.is_alive():  # Check this
-            #    process.kill()
+            config.reset = True
 
             # Delete any created files
-            #if path.exists(file_path): # Uncomment this after above check is done
-            #    remove(file_path)
+            time.sleep(1)
+            if path.exists(config.file_path):
+                remove(config.file_path)
 
             # Reset GUI components to initial state
             self.captureButton.configure(state="normal")
