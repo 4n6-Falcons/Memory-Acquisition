@@ -130,7 +130,7 @@ class App(ctk.CTk):
         self.button_frame.pack(side="bottom", pady=10, anchor="ne")
 
         # Close button
-        self.closeButton = ctk.CTkButton(self.button_frame, text="Close")
+        self.closeButton = ctk.CTkButton(self.button_frame, text="Close", command=self.close_clicked)
         self.closeButton.grid(row=0, column=2)
         
         # Next button
@@ -140,20 +140,50 @@ class App(ctk.CTk):
         # Capture button
         self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=self.capture_clicked)
         self.captureButton.grid(row=0, column=0)
+        
+        # Cancel button
+        self.cancelButton = ctk.CTkButton(self.button_frame, text="Cancel", command=self.cancel_clicked )
+        
+        # Finish button
+        self.finishButton = ctk.CTkButton(self.button_frame, text="Finish!", command=self.finish_clicked)
 
     def switch_frame(self):
         self.Window1.pack_forget()
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
+    
+    def capture_clicked(self):
+        self.captureButton.configure(state="disabled")
+        self.closeButton.grid_forget()
+        self.cancelButton.grid(row=0, column=2)
+        file_path = dump_ram()
+        messagebox.showinfo("Message", "Memory Acquisition Completed!") # display a popup message
+        self.nextButton.configure(state="normal")
+        self.cancelButton.grid_forget()
+        self.closeButton.grid(row=0, column=2)
+        self.closeButton.configure(state="disabled")
 
     def next_clicked(self):
         self.nextButton.configure(state="disabled")
         self.switch_frame()
-
-    def capture_clicked(self):
-        self.captureButton.configure(state="disabled")
-        file_path = dump_ram()
-        messagebox.showinfo("Message", "Process Completed!") # display a popup message
-        self.nextButton.configure(state="normal")
+        self.closeButton.grid_forget()
+        self.finishButton.grid(row=0, column=2)
+        
+    def cancel_clicked(self):                                             #This is not defined properly
+        
+        result = messagebox.askyesno("Confirmation", "Do you want to Cancel?")
+        if result:
+            self.captureButton.configure(state="enabled")
+            self.closeButton.configure(state="enabled")
+            self.nextButton.configure(state="disabled")
+        else:
+            pass
+        
+    def close_clicked(self):
+        self.destroy()
+    
+    def finish_clicked(self):                                                                  
+        messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {output}") 
+        self.destroy()
         
 if __name__ == "__main__":
     app = App()
