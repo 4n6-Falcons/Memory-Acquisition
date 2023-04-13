@@ -1,5 +1,9 @@
 import customtkinter as ctk
 from tkinter import messagebox
+from threading import Thread
+from os import path
+import time
+from psutil import virtual_memory
 from Ram_Dump import dump_ram, output
 
 # System Settings
@@ -19,6 +23,7 @@ class App(ctk.CTk):
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False,False)
 
+        self.total_ram = virtual_memory().total
         # --------------------------------------------------Window1 Frame-----------------------------------------------------------
 
         self.Window1 = ctk.CTkFrame(self, fg_color="transparent")
@@ -150,17 +155,34 @@ class App(ctk.CTk):
     def switch_frame(self):
         self.Window1.pack_forget()
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
+        
+    def progress(self):
+        if self.dump.is_alive():
+            current_size = path.getsize(file_path)
+            progress = current_size / self.total_ram
+            if progress >= 0.9:
+                progress = 0.9
+            self.progress_bar.set(progress)
+            self.update_idletasks()
+            self.after(100)
+            self.progress()
+        else:
+            self.progress_bar.set(1)
+            messagebox.showinfo("Message", "Process Completed!") # display a popup message
+            self.nextButton.configure(state="normal")
+            self.cancelButton.grid_forget()
+            self.closeButton.grid(row=0, column=2)
+            self.closeButton.configure(state="disabled")
     
     def capture_clicked(self):
         self.captureButton.configure(state="disabled")
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2)
-        file_path = dump_ram()
-        messagebox.showinfo("Message", "Memory Acquisition Completed!") # display a popup message
-        self.nextButton.configure(state="normal")
-        self.cancelButton.grid_forget()
-        self.closeButton.grid(row=0, column=2)
-        self.closeButton.configure(state="disabled")
+        self.dump = Thread(target=dump_ram)
+        self.dump.start()
+        time.sleep(1)
+        self.pro = Thread(target=self.progress)
+        self.pro.start()
 
     def next_clicked(self):
         self.nextButton.configure(state="disabled")
