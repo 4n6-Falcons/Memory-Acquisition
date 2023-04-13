@@ -1,10 +1,10 @@
 import customtkinter as ctk
 from tkinter import messagebox
 from threading import Thread
-from os import path
+from os import path, remove
 import time
 from psutil import virtual_memory
-from Ram_Dump import dump_ram, output
+from Ram_Dump import dump_ram, output, file_path
 
 # System Settings
 ctk.set_appearance_mode("System")
@@ -24,6 +24,7 @@ class App(ctk.CTk):
         self.resizable(False,False)
 
         self.total_ram = virtual_memory().total
+        self.reset = False
         # --------------------------------------------------Window1 Frame-----------------------------------------------------------
 
         self.Window1 = ctk.CTkFrame(self, fg_color="transparent")
@@ -39,9 +40,22 @@ class App(ctk.CTk):
         self.destEntry.insert(0, output)
         self.destEntry.configure(state="readonly")
 
+        # Status Frame
+        self.status_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
+        self.status_frame.pack(anchor="nw")
+
+        # Status Lable
+        self.status_lable = ctk.CTkLabel(self.status_frame, text="Status:", font=title)
+        self.status_lable.grid(row=0, column=0)
+
+        # Current Status
+        self.status = ctk.CTkLabel(self.status_frame, text="Not Started Yet")
+        self.status.grid(row=0, column=1, padx=10)
+
         # Progress bar
-        self.progress = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="indeterminate", height=20)
-        self.progress.pack(pady=10, fill="x")
+        self.progress_bar = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="determinate", height=20)
+        self.progress_bar.pack(pady=10, fill="x")
+        self.progress_bar.set(0)
 
         # --------------------------------------------------Window2 Frame-----------------------------------------------------------
         
@@ -136,15 +150,15 @@ class App(ctk.CTk):
 
         # Close button
         self.closeButton = ctk.CTkButton(self.button_frame, text="Close", command=self.close_clicked)
-        self.closeButton.grid(row=0, column=2)
+        self.closeButton.grid(padx="10", row=0, column=2)
         
         # Next button
         self.nextButton = ctk.CTkButton(self.button_frame, text="Next", state="disabled", command=self.next_clicked)
-        self.nextButton.grid(padx="10", row=0, column=1)
+        self.nextButton.grid(row=0, column=1)
             
         # Capture button
         self.captureButton = ctk.CTkButton(self.button_frame, text="Capture!", command=self.capture_clicked)
-        self.captureButton.grid(row=0, column=0)
+        self.captureButton.grid(padx="10", row=0, column=0)
         
         # Cancel button
         self.cancelButton = ctk.CTkButton(self.button_frame, text="Cancel", command=self.cancel_clicked )
@@ -157,7 +171,9 @@ class App(ctk.CTk):
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
         
     def progress(self):
-        if self.dump.is_alive():
+        if self.reset:
+            self.progress_bar.set(0)
+        elif self.dump.is_alive():
             current_size = path.getsize(file_path)
             progress = current_size / self.total_ram
             if progress >= 0.9:
@@ -168,6 +184,7 @@ class App(ctk.CTk):
             self.progress()
         else:
             self.progress_bar.set(1)
+            self.status.configure(text="Dump Created Successfully!")
             messagebox.showinfo("Message", "Process Completed!") # display a popup message
             self.nextButton.configure(state="normal")
             self.cancelButton.grid_forget()
@@ -177,10 +194,11 @@ class App(ctk.CTk):
     def capture_clicked(self):
         self.captureButton.configure(state="disabled")
         self.closeButton.grid_forget()
-        self.cancelButton.grid(row=0, column=2)
+        self.cancelButton.grid(row=0, column=2, padx=10)
         self.dump = Thread(target=dump_ram)
         self.dump.start()
-        time.sleep(1)
+        self.status.configure(text="Dumping..!, Please Wait...")
+        time.sleep(2)
         self.pro = Thread(target=self.progress)
         self.pro.start()
 
@@ -188,15 +206,27 @@ class App(ctk.CTk):
         self.nextButton.configure(state="disabled")
         self.switch_frame()
         self.closeButton.grid_forget()
-        self.finishButton.grid(row=0, column=2)
+        self.finishButton.grid(row=0, column=2, padx="10")
         
     def cancel_clicked(self):                                             #This is not defined properly
         
         result = messagebox.askyesno("Confirmation", "Do you want to Cancel?")
         if result:
-            self.captureButton.configure(state="enabled")
-            self.closeButton.configure(state="enabled")
+            # Stop any running Processes
+            self.reset = True
+            #if self.dump.is_alive():  # Check this
+            #    process.kill()
+
+            # Delete any created files
+            #if path.exists(file_path): # Uncomment this after above check is done
+            #    remove(file_path)
+
+            # Reset GUI components to initial state
+            self.captureButton.configure(state="normal")
             self.nextButton.configure(state="disabled")
+            self.cancelButton.grid_forget()
+            self.status.configure(text="Cancelled.., Ready to Start Again")
+            self.closeButton.grid(padx="10", row=0, column=2)
         else:
             pass
         

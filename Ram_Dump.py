@@ -7,6 +7,7 @@ from datetime import datetime
 # get the current working directory
 cwd = getcwd()
 output = f"{cwd}\\Output\\"
+file_path = None
 
 def get_dump_file_path():
     """Create a file path with current date and time"""
