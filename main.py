@@ -11,7 +11,6 @@ import config
 ctk.set_appearance_mode("System")
 ctk.set_default_color_theme("blue")
 
-# Created Window1
 class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -66,81 +65,46 @@ class App(ctk.CTk):
 
         #------------------- Case Details Session --------------------------------------------------
 
-        # Case Details Lable
-        self.case_detail = ctk.CTkLabel(self.Window2, text="Case Details:", font=title)
-        self.case_detail.pack(anchor="nw")
-
-        # Frame for Case details
-        self.casedetails = ctk.CTkFrame(self.Window2, fg_color="transparent")
-        self.casedetails.pack(padx=40, anchor="nw")
-
+        # Create Case Details section
+        case_detail = ctk.CTkLabel(self.Window2, text="Case Details:", font=title)
+        case_detail.pack(anchor="nw")
+        case_detail_frame = ctk.CTkFrame(self.Window2, fg_color="transparent")
+        case_detail_frame.pack(padx=40, anchor="nw")
         # Frame for Questions
-        self.casequiz = ctk.CTkFrame(self.casedetails, fg_color="transparent")
-        self.casequiz.grid(row=0, column=0)
-
+        case_questions = ctk.CTkFrame(case_detail_frame, fg_color="transparent")
+        case_questions.grid(row=0, column=0)
         # Frame for answers
-        self.caseans = ctk.CTkFrame(self.casedetails, fg_color="transparent")
-        self.caseans.grid(row=0, column=1, padx=10)
+        case_answers = ctk.CTkFrame(case_detail_frame, fg_color="transparent")
+        case_answers.grid(row=0, column=1, padx=10)
 
-        self.caseid = ctk.CTkLabel(self.casequiz, text="Case Number:")
-        self.caseid.pack(anchor="nw")
-        
-        self.caseid_holder = ctk.CTkEntry(self.caseans, width=En_width)
-        self.caseid_holder.pack()
-        
-        self.casename = ctk.CTkLabel(self.casequiz, text="Case Name:")
-        self.casename.pack(pady="5", anchor="nw")
-        
-        self.casename_holder = ctk.CTkEntry(self.caseans, width=En_width)
-        self.casename_holder.pack(pady="5")
-        
-        self.casedesc = ctk.CTkLabel(self.casequiz, text="Case Description:")
-        self.casedesc.pack(anchor="nw")
-        
-        self.casedesc_holder = ctk.CTkEntry(self.caseans, width=En_width)
-        self.casedesc_holder.pack()
+        for i, key in enumerate(config.case_details.keys()):
+            label = ctk.CTkLabel(case_questions, text=str(key) + ":")
+            label.pack(pady=0 if i % 2 == 0 else 5, anchor="nw")
+            entry = ctk.CTkEntry(case_answers, width=En_width)
+            entry.pack(pady=0 if i % 2 == 0 else 5)
+            config.case_details[key] = entry
         
         #------------------- Examiner Details Session ----------------------------------------------
         
-        # Examiner Details Lable
-        self.examiner_detail = ctk.CTkLabel(self.Window2, text="Examiner Details:", font=title)
-        self.examiner_detail.pack(anchor="nw")
-        
-        # Frame for Examiner details
-        self.examinerdetails = ctk.CTkFrame(self.Window2, fg_color="transparent")
-        self.examinerdetails.pack(padx=40, anchor="nw")
-        
-        # Frame for Examiner Questions
-        self.examinerquiz = ctk.CTkFrame(self.examinerdetails, fg_color="transparent")
-        self.examinerquiz.grid(row=0, column=0)
+        # Create Examiner Details Section
+        examiner_detail = ctk.CTkLabel(self.Window2, text="Examiner Details:", font=title)
+        examiner_detail.pack(anchor="nw")
+        examiner_detail_frame = ctk.CTkFrame(self.Window2, fg_color="transparent")
+        examiner_detail_frame.pack(padx=40, anchor="nw")
+        # Frame for Questions
+        examiner_questions = ctk.CTkFrame(examiner_detail_frame, fg_color="transparent")
+        examiner_questions.grid(row=0, column=0)
+        # Frame for Answers
+        examiner_answers = ctk.CTkFrame(examiner_detail_frame, fg_color="transparent")
+        examiner_answers.grid(row=0, column=1, padx=10)
 
-        # Frame for Examiner Answers
-        self.examinerans = ctk.CTkFrame(self.examinerdetails, fg_color="transparent")
-        self.examinerans.grid(row=0, column=1, padx=10)
-
-        self.examinername = ctk.CTkLabel(self.examinerquiz, text="Name:")
-        self.examinername.pack(anchor="nw")
-        
-        self.examinername_holder = ctk.CTkEntry(self.examinerans, width=En_width)
-        self.examinername_holder.pack()
-        
-        self.examinerphone = ctk.CTkLabel(self.examinerquiz, text="Phone Number:    ")
-        self.examinerphone.pack(pady="5", anchor="nw")
-        
-        self.examinerphone_holder = ctk.CTkEntry(self.examinerans, width=En_width)
-        self.examinerphone_holder.pack(pady="5")
-        
-        self.examineremail = ctk.CTkLabel(self.examinerquiz, text="Email Id:")
-        self.examineremail.pack(anchor="nw")
-        
-        self.examineremail_holder = ctk.CTkEntry(self.examinerans, width=En_width)
-        self.examineremail_holder.pack()
-        
-        self.examinerorg = ctk.CTkLabel(self.examinerquiz, text="Organization:")
-        self.examinerorg.pack(pady="5", anchor="nw")
-        
-        self.examinerorg_holder = ctk.CTkEntry(self.examinerans, width=En_width)
-        self.examinerorg_holder.pack(pady="5")
+        for i, key in enumerate(config.examiner_details.keys()):
+            pady_value = 0 if i % 2 == 0 else 5
+            label = ctk.CTkLabel(examiner_questions, text=str(key) + ":")
+            label.pack(pady=pady_value, anchor="nw")
+            entry = ctk.CTkEntry(examiner_answers, width=En_width)
+            entry.pack(padx=10, pady=pady_value)
+            config.examiner_details[key] = entry
 
         # --------------------------------------------------Button Frame-----------------------------------------------------------
 
