@@ -15,7 +15,7 @@ class App(ctk.CTk):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         
-        appwidth, appheight = 550, 350
+        appwidth, appheight = 550, 380
         title = ctk.CTkFont(weight="bold")
 
         self.title("4n6 Dump")
@@ -117,51 +117,11 @@ class App(ctk.CTk):
         
         self.Window2 = ctk.CTkFrame(self, fg_color="transparent")
 
-        # Variables
-        En_width = 300
+        self.QAForm_Case = QAForm(self.Window2, config.case_details, padx_details=0, header_name="Case Details:")
+        self.QAForm_Case.pack(anchor="nw")
 
-        #------------------- Case Details Session --------------------------------------------------
-
-        # Create Case Details section
-        case_detail = ctk.CTkLabel(self.Window2, text="Case Details:", font=title)
-        case_detail.pack(anchor="nw")
-        case_detail_frame = ctk.CTkFrame(self.Window2, fg_color="transparent")
-        case_detail_frame.pack(padx=40, anchor="nw")
-        # Frame for Questions
-        case_questions = ctk.CTkFrame(case_detail_frame, fg_color="transparent")
-        case_questions.grid(row=0, column=0)
-        # Frame for answers
-        case_answers = ctk.CTkFrame(case_detail_frame, fg_color="transparent")
-        case_answers.grid(row=0, column=1, padx=10)
-
-        for i, key in enumerate(config.case_details.keys()):
-            label = ctk.CTkLabel(case_questions, text=str(key) + ":")
-            label.pack(pady=0 if i % 2 == 0 else 5, anchor="nw")
-            entry = ctk.CTkEntry(case_answers, width=En_width)
-            entry.pack(pady=0 if i % 2 == 0 else 5)
-            config.case_details[key] = entry
-        
-        #------------------- Examiner Details Session ----------------------------------------------
-        
-        # Create Examiner Details Section
-        examiner_detail = ctk.CTkLabel(self.Window2, text="Examiner Details:", font=title)
-        examiner_detail.pack(anchor="nw")
-        examiner_detail_frame = ctk.CTkFrame(self.Window2, fg_color="transparent")
-        examiner_detail_frame.pack(padx=40, anchor="nw")
-        # Frame for Questions
-        examiner_questions = ctk.CTkFrame(examiner_detail_frame, fg_color="transparent")
-        examiner_questions.grid(row=0, column=0)
-        # Frame for Answers
-        examiner_answers = ctk.CTkFrame(examiner_detail_frame, fg_color="transparent")
-        examiner_answers.grid(row=0, column=1, padx=10)
-
-        for i, key in enumerate(config.examiner_details.keys()):
-            pady_value = 0 if i % 2 == 0 else 5
-            label = ctk.CTkLabel(examiner_questions, text=str(key) + ":")
-            label.pack(pady=pady_value, anchor="nw")
-            entry = ctk.CTkEntry(examiner_answers, width=En_width)
-            entry.pack(padx=10, pady=pady_value)
-            config.examiner_details[key] = entry
+        self.QAForm_Examiner = QAForm(self.Window2, config.examiner_details, padx_details=10, header_name="Examiner Details:")
+        self.QAForm_Examiner.pack(anchor="nw")
 
         # --------------------------------------------------Button Frame-----------------------------------------------------------
 
@@ -257,9 +217,34 @@ class App(ctk.CTk):
     def close_clicked(self):
         self.destroy()
     
-    def finish_clicked(self):                                                                  
+    def finish_clicked(self):
+        config.case_details = self.QAForm_Case.get_answers()
+        config.examiner_details = self.QAForm_Examiner.get_answers()                                                 
         messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {output}") 
         self.destroy()
+
+class QAForm(ctk.CTkFrame):
+    def __init__(self, parent, qa_dict, padx_details, header_name="Details:"):
+        super().__init__(parent, fg_color="transparent")
+
+        self.header_name = header_name
+        self.qa_dict = qa_dict
+        self.labels = {}
+        self.entries = {}
+
+        self.header = ctk.CTkLabel(self, text=self.header_name, font=("Arial", 14, "bold"))
+        self.header.grid(row=0, column=0, sticky="w")
+
+        for i, (q, a) in enumerate(self.qa_dict.items()):
+            self.labels[q] = ctk.CTkLabel(self, text=q + ":")
+            self.labels[q].grid(row=i+1, column=0, padx=20, pady=2, sticky="w")
+            self.entries[q] = ctk.CTkEntry(self, width=config.En_width)
+            self.entries[q].grid(row=i+1, column=1, padx=padx_details, pady=2)
+            if a:
+                self.entries[q].insert(0, a)
+
+    def get_answers(self):
+        return {q: e.get() for q, e in self.entries.items()}
         
 if __name__ == "__main__":
     app = App()
