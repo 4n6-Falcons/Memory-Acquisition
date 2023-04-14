@@ -36,17 +36,37 @@ class App(ctk.CTk):
 
         # Destination Folder Entry
         self.destEntry = ctk.CTkEntry(self.Window1)
-        self.destEntry.pack(fill="x", pady=10)
+        self.destEntry.pack(fill="x", pady=5)
         self.destEntry.insert(0, output)
         self.destEntry.configure(state="readonly")
+        
+        # Specify File Name and Specify File Format Frame
+        self.file_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
+        self.file_frame.pack(anchor="nw", pady=20)
+        
+        # Specify File Name Label
+        self.filename_Label = ctk.CTkLabel(self.file_frame, text="Specify File Name:", font=title)
+        self.filename_Label.grid(row=0, column=0)
+        
+        # Specify File Name Entry Box
+        self.filename = ctk.CTkEntry(self.file_frame, justify="center", state="readonly", width=250)
+        self.filename.grid(row=1, column=0, padx=25)
+        
+        # Specify File Format Label
+        self.filefmtLable = ctk.CTkLabel(self.file_frame, text="Specify File Format: ", font=title)
+        self.filefmtLable.grid(row=0, column=1)
+        
+        # Specify File Format Option Menu
+        self.filefmt = ctk.CTkOptionMenu(self.file_frame, anchor="center", values=["Default (.raw)", ".dd", ".bin"], width=180)
+        self.filefmt.grid(row=1, column=1, padx=25)
 
         # Status Frame
         self.status_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
         self.status_frame.pack(anchor="nw")
 
         # Status Lable
-        self.status_lable = ctk.CTkLabel(self.status_frame, text="Status:", font=title)
-        self.status_lable.grid(row=0, column=0)
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Status:", font=title)
+        self.status_label.grid(row=0, column=0)
 
         # Current Status
         self.status = ctk.CTkLabel(self.status_frame, text="Not Started Yet")
@@ -56,6 +76,43 @@ class App(ctk.CTk):
         self.progress_bar = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="determinate", height=20)
         self.progress_bar.pack(pady=10, fill="x")
         self.progress_bar.set(0)
+        
+        # Times and OS Frame
+        self.times_os_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
+        self.times_os_frame.pack(anchor="nw")
+        
+        # Start Time Label
+        self.starttime_label = ctk.CTkLabel(self.times_os_frame, text="Start Time:", font=title)
+        self.starttime_label.grid(row=0, column=0)
+        
+        # Start Time Entry Box
+        self.starttime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
+        self.starttime.grid(row=1, column=0, padx=5)
+        
+        # End Time Label
+        self.endtime_label = ctk.CTkLabel(self.times_os_frame, text="End Time:", font=title)
+        self.endtime_label.grid(row=0, column=1)
+        
+        # End Time Entry Box
+        self.endtime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
+        self.endtime.grid(row=1, column=1, padx=5)
+        
+        # Elapsed Time Label
+        self.starttime_label = ctk.CTkLabel(self.times_os_frame, text="Elapsed Time:", font=title)
+        self.starttime_label.grid(row=0, column=2)
+        
+        # Elapsed Time Entry Box
+        self.elapsedtime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
+        self.elapsedtime.grid(row=1, column=2, padx=5)
+        
+        # OS Detection Label
+        self.osdectLabel = ctk.CTkLabel(self.times_os_frame, text="Detected OS: ", font=title)
+        self.osdectLabel.grid(row=0, column=3)
+        
+        #OS Detection Entry Box
+        self.osdetc = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=180)
+        self.osdetc.grid(row=1, column=3, padx=5)
+        
 
         # --------------------------------------------------Window2 Frame-----------------------------------------------------------
         
@@ -176,15 +233,17 @@ class App(ctk.CTk):
         elif self.dump.is_alive():
             current_size = path.getsize(config.file_path)
             progress = current_size / self.total_ram
-            if progress >= 0.9:
-                progress = 0.9
+            if progress >= 0.95:
+                progress = 0.95
+            progress_perct = int(progress * 100)
             self.progress_bar.set(progress)
+            self.status.configure(text=f"Dumping.., Please Wait... [ {progress_perct} % ]")
             self.update_idletasks()
             self.after(100)
             self.progress()
         else:
             self.progress_bar.set(1)
-            self.status.configure(text="Dump Created Successfully!")
+            self.status.configure(text=f"Dump Created Successfully!")
             messagebox.showinfo("Message", "Process Completed!") # display a popup message
             self.nextButton.configure(state="normal")
             self.cancelButton.grid_forget()
@@ -199,7 +258,6 @@ class App(ctk.CTk):
         config.file_path = get_dump_file_path()
         self.dump = Thread(target=dump_ram, args=(config.file_path,))
         self.dump.start()
-        self.status.configure(text="Dumping.., Please Wait...")
         time.sleep(1)
         self.pro = Thread(target=self.progress)
         self.pro.start()
