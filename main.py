@@ -4,25 +4,33 @@ from threading import Thread
 from os import path, remove
 import time
 from psutil import virtual_memory
-from Ram_Dump import dump_ram, output, get_dump_file_path
+import Ram_Dump
 import config
 
 ctk.set_appearance_mode("System") # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue") # Themes: "blue" (standard), "green", "dark-blue"
 
 class InfoBox(ctk.CTkFrame):
-    def __init__(self, parent, title, title_anchor="center", info="", info_fill="none", title_font=("Arial", 14, "bold")):
+    def __init__(self, parent, title, title_anchor="center", info="", info_justify="center", info_fill="none", info_placeholder=None, info_state="readonly", info_width=100, info_var=None, title_font=("Arial", 14, "bold")):
         super().__init__(parent, fg_color="transparent")
+
+        self.info_state = info_state
 
         # Create the title label
         title_label = ctk.CTkLabel(self, text=title, font=title_font)
-        title_label.pack(side="top", anchor=title_anchor)
+        title_label.pack(side="top", pady=(0, 5), anchor=title_anchor)
 
         # Create the info Entry
-        info_Entry = ctk.CTkEntry(self)
-        info_Entry.pack(side="bottom", fill=info_fill)
-        info_Entry.insert(0, info)
-        info_Entry.configure(state="readonly")
+        self.info_Entry = ctk.CTkEntry(self, justify=info_justify, textvariable=info_var, placeholder_text=info_placeholder, width=info_width)
+        self.info_Entry.pack(side="bottom", fill=info_fill)
+        self.info_Entry.insert(0, info)
+        self.info_Entry.configure(state=self.info_state)
+
+    def insert_text(self, text):
+        self.info_Entry.configure(state="normal")
+        self.info_Entry.delete(0, "end")
+        self.info_Entry.insert(0, text)
+        self.info_Entry.configure(state=self.info_state)
 
 class QAForm(ctk.CTkFrame):
     def __init__(self, parent, qa_dict, header_name, padx_details=0):
@@ -50,12 +58,12 @@ class App(ctk.CTk):
         super().__init__()
         
         appwidth, appheight = 550, 380
-        title = ctk.CTkFont(weight="bold")
 
-        self.title("4n6 Dump")
+        self.title("4n6 Dump Acquisition")
         self.iconbitmap("RAM Icon.ico")
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False,False)
+        self.protocol("WM_DELETE_WINDOW", self.X_button)
 
         self.total_ram = virtual_memory().total
         # --------------------------------------------------Window1 Frame-----------------------------------------------------------
@@ -65,50 +73,55 @@ class App(ctk.CTk):
 
         self.Window1.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        self.DestFolder = InfoBox(self.Window1, title="Destination Folder:", title_anchor="nw", info=output, info_fill="x")
+        self.DestFolder = InfoBox(self.Window1, title="Destination Folder:", title_anchor="nw", info=Ram_Dump.output, info_justify="left", info_fill="x")
         self.DestFolder.grid(row=0, column=0, columnspan=4, sticky="ew")
 
-        self.file_name = InfoBox(self.Window1, title="Specify File Name:", info_fill="x")
-        self.file_name.grid(row=1, column=0, columnspan=2, sticky="ew")
+        self.file_name = InfoBox(self.Window1, title="Specify File Name:", info_justify="left", info_state="normal", info_fill="x",info_placeholder="memdump_YYYY-MM-DD_HH-MM-SS")
+        self.file_name.grid(row=1, column=0, columnspan=3, padx=5, pady=20, sticky="ew")
 
         # Specify File Name and Specify File Format Frame
         self.file_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
-        self.file_frame.grid(row=1, column=2, columnspan=2)
+        self.file_frame.grid(row=1, column=3)
 
-        self.filefmtLable = ctk.CTkLabel(self.file_frame, text="Specify File Format: ", font=title)
-        self.filefmtLable.pack()
+        self.filefmtLable = ctk.CTkLabel(self.file_frame, text="Specify File Format: ", font=("Arial", 14, "bold"))
+        self.filefmtLable.pack(pady=(0,5))
         
         self.filefmt = ctk.CTkOptionMenu(self.file_frame, anchor="center", values=["Default (.raw)", ".dd", ".bin"], width=180)
         self.filefmt.pack()
 
         # Status Frame
-        self.status_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
-        self.status_frame.grid(row=2, column=0, columnspan=2, sticky="nw")
+        self.status_frame = ctk.CTkFrame(self.Window1, border_width=2, border_color="lightblue")
+        self.status_frame.grid(row=2, column=0, columnspan=4, pady=(0, 10), sticky="ew")
+
+        self.status_frame.grid_columnconfigure(0, weight=0)
+        self.status_frame.grid_columnconfigure(1, weight=1)
 
         # Status Lable
-        self.status_label = ctk.CTkLabel(self.status_frame, text="Status:", font=title)
-        self.status_label.grid(row=0, column=0)
+        self.status_label = ctk.CTkLabel(self.status_frame, text="Status:", font=("Arial", 14, "bold"))
+        self.status_label.grid(row=0, column=0,padx=(10, 0), pady=(10, 0), sticky="nw")
 
         # Current Status
         self.status = ctk.CTkLabel(self.status_frame, text="Not Started Yet")
-        self.status.grid(row=0, column=1, padx=10)
+        self.status.grid(row=0, column=1, padx=10, pady=(10, 0), sticky="nw")
 
         # Progress bar
-        self.progress_bar = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="determinate", height=20)
-        self.progress_bar.grid(row=3, column=0, columnspan=4, sticky="ew")
+        self.progress_bar = ctk.CTkProgressBar(self.status_frame, orientation="horizontal", mode="determinate", height=20)
+        self.progress_bar.grid(row=1, column=0, columnspan=2, padx=10, pady=(5, 20), sticky="ew")
         self.progress_bar.set(0)
 
-        self.starttime = InfoBox(self.Window1, title="Start Time:")
-        self.starttime.grid(row=4, column=0)
+        self.starttime = InfoBox(self.Window1, title="Start Time:", info="HH:MM:SS")
+        self.starttime.grid(row=3, column=0)
 
-        self.endtime = InfoBox(self.Window1, title="End Time:")
-        self.endtime.grid(row=4, column=1)
+        self.endtime = InfoBox(self.Window1, title="End Time:", info="HH:MM:SS")
+        self.endtime.grid(row=3, column=1)
 
-        self.elapsedtime = InfoBox(self.Window1, title="Elapsed Time:")
-        self.elapsedtime.grid(row=4, column=2)
+        self.elapsed_time = ctk.StringVar()
+        self.elapsed_time.set("00:00:00")
+        self.elapsedtime = InfoBox(self.Window1, title="Elapsed Time:", info_var=self.elapsed_time)
+        self.elapsedtime.grid(row=3, column=2)
 
-        self.osdect = InfoBox(self.Window1, title="Detected OS:")
-        self.osdect.grid(row=4, column=3)
+        self.osdect = InfoBox(self.Window1, title="Detected OS:", info=Ram_Dump.OS, info_width=180)
+        self.osdect.grid(row=3, column=3)
 
         # --------------------------------------------------Window2 Frame-----------------------------------------------------------
         
@@ -144,6 +157,29 @@ class App(ctk.CTk):
         # Finish button
         self.finishButton = ctk.CTkButton(self.button_frame, text="Finish!", command=self.finish_clicked)
 
+    def start_timer(self):
+        self.start_time = time.time()
+        self.starttime.insert_text(Ram_Dump.datetime.now().strftime("%H:%M:%S"))
+        self.update_elapsed_time()
+
+    def time_convert(self, time):
+        time = int(time)
+        hours = time // 3600
+        minutes = (time % 3600) // 60
+        seconds = time % 60
+        time = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+        return time
+
+    def update_elapsed_time(self):
+        if config.reset:
+            self.elapsed_time.set("00:00:00")
+        elif self.stop:
+            self.endtime.insert_text(Ram_Dump.datetime.now().strftime("%H:%M:%S"))
+        else:
+            elapsed_seconds = int(time.time() - self.start_time)
+            self.elapsed_time.set(self.time_convert(elapsed_seconds))
+            self.after(1000, self.update_elapsed_time) # update every second
+
     def switch_frame(self):
         self.Window1.pack_forget()
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
@@ -165,6 +201,7 @@ class App(ctk.CTk):
             self.progress()
         else:
             self.progress_bar.set(1)
+            self.stop = True
             self.status.configure(text=f"Dump Created Successfully!")
             messagebox.showinfo("Message", "Process Completed!") # display a popup message
             self.nextButton.configure(state="normal")
@@ -173,14 +210,17 @@ class App(ctk.CTk):
             self.closeButton.configure(state="disabled")
     
     def capture_clicked(self):
+        self.stop = False
         self.captureButton.configure(state="disabled")
         config.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
-        config.file_path = get_dump_file_path()
-        self.dump = Thread(target=dump_ram, args=(config.file_path,))
+        config.file_path = Ram_Dump.get_dump_file_path()
+        self.dump = Thread(target=Ram_Dump.dump_ram, args=(config.file_path,))
         self.dump.start()
-        time.sleep(1)
+        self.timer = Thread(target=self.start_timer)
+        self.timer.start()
+        time.sleep(0.1)
         self.pro = Thread(target=self.progress)
         self.pro.start()
 
@@ -198,26 +238,36 @@ class App(ctk.CTk):
             # Stop any running Processes
             config.reset = True
 
-            # Delete any created files
-            time.sleep(1)
-            if path.exists(config.file_path):
-                remove(config.file_path)
-
             # Reset GUI components to initial state
             self.captureButton.configure(state="normal")
             self.nextButton.configure(state="disabled")
             self.cancelButton.grid_forget()
             self.closeButton.grid(padx="10", row=0, column=2)
+
+            # Delete any created files
+            time.sleep(1)
+            if path.exists(config.file_path):
+                remove(config.file_path)
         else:
             pass
         
     def close_clicked(self):
         self.destroy()
-    
+
+    def X_button(self):
+        result = messagebox.askyesno("Confirmation", "Are you sure?")
+        if result:
+            config.reset = True
+            time.sleep(1)
+            if path.exists(config.file_path):
+                remove(config.file_path)
+            self.destroy()
+        else:
+            pass    
     def finish_clicked(self):
         config.case_details = self.QAForm_Case.get_answers()
         config.examiner_details = self.QAForm_Examiner.get_answers()                                                 
-        messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {output}") 
+        messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {Ram_Dump.output}")
         self.destroy()
         
 if __name__ == "__main__":

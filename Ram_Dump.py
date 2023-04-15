@@ -9,6 +9,7 @@ import time
 # get the current working directory
 cwd = getcwd()
 output = f"{cwd}\\Output\\"
+OS = platform
 
 def get_dump_file_path():
     """Create a file path with current date and time"""
@@ -21,15 +22,15 @@ def get_dump_file_path():
 def dump_ram(file_path):
     """Dump the Contents of Ram to a file"""
     # Check the current operating system
-    if platform.startswith('win'):
+    if OS.startswith('win'):
         # Execute the Windows RAM dump code
         process = Popen(['./tools/winpmem_mini_x64_rc2.exe', file_path])
         
-    elif platform.startswith('linux'):
+    elif OS.startswith('linux'):
         # Execute the Linux RAM dump code
         process = Popen(['./tools/avml-minimal', file_path], check=True)
         
-    elif platform.startswith('darwin'):
+    elif OS.startswith('darwin'):
         # Execute the Mac RAM dump code
         pass
     
