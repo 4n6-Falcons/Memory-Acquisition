@@ -7,13 +7,47 @@ from psutil import virtual_memory
 from Ram_Dump import dump_ram, output, get_dump_file_path
 import config
 
-# System Settings
-ctk.set_appearance_mode("System")
-ctk.set_default_color_theme("blue")
+ctk.set_appearance_mode("System") # Modes: "System" (standard), "Dark", "Light"
+ctk.set_default_color_theme("blue") # Themes: "blue" (standard), "green", "dark-blue"
+
+class InfoBox(ctk.CTkFrame):
+    def __init__(self, parent, title, title_anchor="center", info="", info_fill="none", title_font=("Arial", 14, "bold")):
+        super().__init__(parent, fg_color="transparent")
+
+        # Create the title label
+        title_label = ctk.CTkLabel(self, text=title, font=title_font)
+        title_label.pack(side="top", anchor=title_anchor)
+
+        # Create the info Entry
+        info_Entry = ctk.CTkEntry(self)
+        info_Entry.pack(side="bottom", fill=info_fill)
+        info_Entry.insert(0, info)
+        info_Entry.configure(state="readonly")
+
+class QAForm(ctk.CTkFrame):
+    def __init__(self, parent, qa_dict, header_name, padx_details=0):
+        super().__init__(parent, fg_color="transparent")
+
+        self.labels = {}
+        self.entries = {}
+
+        self.header = ctk.CTkLabel(self, text=header_name, font=("Arial", 14, "bold"))
+        self.header.grid(row=0, column=0, sticky="w")
+
+        for i, (q, a) in enumerate(qa_dict.items()):
+            self.labels[q] = ctk.CTkLabel(self, text=q + ":")
+            self.labels[q].grid(row=i+1, column=0, padx=20, pady=2, sticky="w")
+            self.entries[q] = ctk.CTkEntry(self, width=config.En_width)
+            self.entries[q].grid(row=i+1, column=1, padx=padx_details, pady=2)
+            if a:
+                self.entries[q].insert(0, a)
+
+    def get_answers(self):
+        return {q: e.get() for q, e in self.entries.items()}
 
 class App(ctk.CTk):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self):
+        super().__init__()
         
         appwidth, appheight = 550, 380
         title = ctk.CTkFont(weight="bold")
@@ -29,39 +63,27 @@ class App(ctk.CTk):
         self.Window1 = ctk.CTkFrame(self, fg_color="transparent")
         self.Window1.pack(fill="x", anchor="nw", padx=10)
 
-        # Destination Folder Lable
-        self.destLable = ctk.CTkLabel(self.Window1, text="Destination Folder:", font=title)
-        self.destLable.pack(anchor="nw")
+        self.Window1.grid_columnconfigure((0, 1, 2, 3), weight=1)
 
-        # Destination Folder Entry
-        self.destEntry = ctk.CTkEntry(self.Window1)
-        self.destEntry.pack(fill="x", pady=5)
-        self.destEntry.insert(0, output)
-        self.destEntry.configure(state="readonly")
-        
+        self.DestFolder = InfoBox(self.Window1, title="Destination Folder:", title_anchor="nw", info=output, info_fill="x")
+        self.DestFolder.grid(row=0, column=0, columnspan=4, sticky="ew")
+
+        self.file_name = InfoBox(self.Window1, title="Specify File Name:", info_fill="x")
+        self.file_name.grid(row=1, column=0, columnspan=2, sticky="ew")
+
         # Specify File Name and Specify File Format Frame
         self.file_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
-        self.file_frame.pack(anchor="nw", pady=20)
-        
-        # Specify File Name Label
-        self.filename_Label = ctk.CTkLabel(self.file_frame, text="Specify File Name:", font=title)
-        self.filename_Label.grid(row=0, column=0)
-        
-        # Specify File Name Entry Box
-        self.filename = ctk.CTkEntry(self.file_frame, justify="center", state="readonly", width=250)
-        self.filename.grid(row=1, column=0, padx=25)
-        
-        # Specify File Format Label
+        self.file_frame.grid(row=1, column=2, columnspan=2)
+
         self.filefmtLable = ctk.CTkLabel(self.file_frame, text="Specify File Format: ", font=title)
-        self.filefmtLable.grid(row=0, column=1)
+        self.filefmtLable.pack()
         
-        # Specify File Format Option Menu
         self.filefmt = ctk.CTkOptionMenu(self.file_frame, anchor="center", values=["Default (.raw)", ".dd", ".bin"], width=180)
-        self.filefmt.grid(row=1, column=1, padx=25)
+        self.filefmt.pack()
 
         # Status Frame
         self.status_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
-        self.status_frame.pack(anchor="nw")
+        self.status_frame.grid(row=2, column=0, columnspan=2, sticky="nw")
 
         # Status Lable
         self.status_label = ctk.CTkLabel(self.status_frame, text="Status:", font=title)
@@ -73,54 +95,29 @@ class App(ctk.CTk):
 
         # Progress bar
         self.progress_bar = ctk.CTkProgressBar(self.Window1, orientation="horizontal", mode="determinate", height=20)
-        self.progress_bar.pack(pady=10, fill="x")
+        self.progress_bar.grid(row=3, column=0, columnspan=4, sticky="ew")
         self.progress_bar.set(0)
-        
-        # Times and OS Frame
-        self.times_os_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
-        self.times_os_frame.pack(anchor="nw")
-        
-        # Start Time Label
-        self.starttime_label = ctk.CTkLabel(self.times_os_frame, text="Start Time:", font=title)
-        self.starttime_label.grid(row=0, column=0)
-        
-        # Start Time Entry Box
-        self.starttime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
-        self.starttime.grid(row=1, column=0, padx=5)
-        
-        # End Time Label
-        self.endtime_label = ctk.CTkLabel(self.times_os_frame, text="End Time:", font=title)
-        self.endtime_label.grid(row=0, column=1)
-        
-        # End Time Entry Box
-        self.endtime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
-        self.endtime.grid(row=1, column=1, padx=5)
-        
-        # Elapsed Time Label
-        self.starttime_label = ctk.CTkLabel(self.times_os_frame, text="Elapsed Time:", font=title)
-        self.starttime_label.grid(row=0, column=2)
-        
-        # Elapsed Time Entry Box
-        self.elapsedtime = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=100)
-        self.elapsedtime.grid(row=1, column=2, padx=5)
-        
-        # OS Detection Label
-        self.osdectLabel = ctk.CTkLabel(self.times_os_frame, text="Detected OS: ", font=title)
-        self.osdectLabel.grid(row=0, column=3)
-        
-        #OS Detection Entry Box
-        self.osdetc = ctk.CTkEntry(self.times_os_frame, justify="center", state="readonly", width=180)
-        self.osdetc.grid(row=1, column=3, padx=5)
-        
+
+        self.starttime = InfoBox(self.Window1, title="Start Time:")
+        self.starttime.grid(row=4, column=0)
+
+        self.endtime = InfoBox(self.Window1, title="End Time:")
+        self.endtime.grid(row=4, column=1)
+
+        self.elapsedtime = InfoBox(self.Window1, title="Elapsed Time:")
+        self.elapsedtime.grid(row=4, column=2)
+
+        self.osdect = InfoBox(self.Window1, title="Detected OS:")
+        self.osdect.grid(row=4, column=3)
 
         # --------------------------------------------------Window2 Frame-----------------------------------------------------------
         
         self.Window2 = ctk.CTkFrame(self, fg_color="transparent")
 
-        self.QAForm_Case = QAForm(self.Window2, config.case_details, padx_details=0, header_name="Case Details:")
+        self.QAForm_Case = QAForm(self.Window2, config.case_details, header_name="Case Details:")
         self.QAForm_Case.pack(anchor="nw")
 
-        self.QAForm_Examiner = QAForm(self.Window2, config.examiner_details, padx_details=10, header_name="Examiner Details:")
+        self.QAForm_Examiner = QAForm(self.Window2, config.examiner_details, header_name="Examiner Details:", padx_details=10)
         self.QAForm_Examiner.pack(anchor="nw")
 
         # --------------------------------------------------Button Frame-----------------------------------------------------------
@@ -154,6 +151,7 @@ class App(ctk.CTk):
     def progress(self):
         if config.reset:
             self.progress_bar.set(0)
+            self.status.configure(text="Cancelled.., Ready to Start Again")
         elif self.dump.is_alive():
             current_size = path.getsize(config.file_path)
             progress = current_size / self.total_ram
@@ -209,7 +207,6 @@ class App(ctk.CTk):
             self.captureButton.configure(state="normal")
             self.nextButton.configure(state="disabled")
             self.cancelButton.grid_forget()
-            self.status.configure(text="Cancelled.., Ready to Start Again")
             self.closeButton.grid(padx="10", row=0, column=2)
         else:
             pass
@@ -222,29 +219,6 @@ class App(ctk.CTk):
         config.examiner_details = self.QAForm_Examiner.get_answers()                                                 
         messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {output}") 
         self.destroy()
-
-class QAForm(ctk.CTkFrame):
-    def __init__(self, parent, qa_dict, padx_details, header_name="Details:"):
-        super().__init__(parent, fg_color="transparent")
-
-        self.header_name = header_name
-        self.qa_dict = qa_dict
-        self.labels = {}
-        self.entries = {}
-
-        self.header = ctk.CTkLabel(self, text=self.header_name, font=("Arial", 14, "bold"))
-        self.header.grid(row=0, column=0, sticky="w")
-
-        for i, (q, a) in enumerate(self.qa_dict.items()):
-            self.labels[q] = ctk.CTkLabel(self, text=q + ":")
-            self.labels[q].grid(row=i+1, column=0, padx=20, pady=2, sticky="w")
-            self.entries[q] = ctk.CTkEntry(self, width=config.En_width)
-            self.entries[q].grid(row=i+1, column=1, padx=padx_details, pady=2)
-            if a:
-                self.entries[q].insert(0, a)
-
-    def get_answers(self):
-        return {q: e.get() for q, e in self.entries.items()}
         
 if __name__ == "__main__":
     app = App()
