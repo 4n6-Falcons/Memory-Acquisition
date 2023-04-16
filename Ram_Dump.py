@@ -11,12 +11,17 @@ cwd = getcwd()
 output = f"{cwd}\\Output\\"
 OS = platform
 
-def get_dump_file_path():
+def get_dump_file_path(filefmt_choice, specified_filename):
     """Create a file path with current date and time"""
     makedirs("Output", exist_ok=True)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"memdump_{current_time}.raw"
-    file_path = output + file_name #File path with date and time stamp
+    
+    if specified_filename:
+        file_name = specified_filename
+    else:
+        file_name = f"memdump_{current_time}"
+        
+    file_path = output + file_name + filefmt_choice#File path with date and time stamp
     return file_path
 
 def dump_ram(file_path):

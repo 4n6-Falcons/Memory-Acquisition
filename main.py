@@ -60,7 +60,7 @@ class App(ctk.CTk):
         appwidth, appheight = 550, 380
 
         self.title("4n6 Dump Acquisition")
-        self.iconbitmap("RAM Icon.ico")
+        self.iconbitmap("icon.ico")
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False,False)
         self.protocol("WM_DELETE_WINDOW", self.X_button)
@@ -211,11 +211,13 @@ class App(ctk.CTk):
     
     def capture_clicked(self):
         self.stop = False
+        filefmt_choice = self.filefmt.get()
+        specified_filename = self.file_name.get()
         self.captureButton.configure(state="disabled")
         config.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
-        config.file_path = Ram_Dump.get_dump_file_path()
+        config.file_path = Ram_Dump.get_dump_file_path(filefmt_choice, specified_filename)
         self.dump = Thread(target=Ram_Dump.dump_ram, args=(config.file_path,))
         self.dump.start()
         self.timer = Thread(target=self.start_timer)
