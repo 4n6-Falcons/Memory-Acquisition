@@ -3,7 +3,7 @@ from sys import platform, exit
 import subprocess
 from os import makedirs, getcwd
 from datetime import datetime
-import config
+import Report
 import time
 
 # get the current working directory
@@ -47,10 +47,10 @@ def dump_ram(file_path):
     process = subprocess.Popen(command + [file_path])
 
     while process.poll() is None:
-        if config.reset:
+        if Report.reset:
             process.kill()
         time.sleep(0.1)
 
 
 if __name__ == "__main__":
-    dump_ram(config.file_path)
+    dump_ram(Report.file_path)

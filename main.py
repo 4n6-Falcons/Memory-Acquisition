@@ -5,7 +5,7 @@ from os import path, remove
 import time
 from psutil import virtual_memory
 import Ram_Dump
-import config
+import Report
 
 ctk.set_appearance_mode("System") # Modes: "System" (standard), "Dark", "Light"
 ctk.set_default_color_theme("blue") # Themes: "blue" (standard), "green", "dark-blue"
@@ -131,10 +131,10 @@ class App(ctk.CTk):
         
         self.Window2 = ctk.CTkFrame(self, fg_color="transparent")
 
-        self.QAForm_Case = QAForm(self.Window2, config.case_details, header_name="Case Details:")
+        self.QAForm_Case = QAForm(self.Window2, Report.case_details, header_name="Case Details:")
         self.QAForm_Case.pack(anchor="nw")
 
-        self.QAForm_Examiner = QAForm(self.Window2, config.examiner_details, header_name="Examiner Details:", padx_details=10)
+        self.QAForm_Examiner = QAForm(self.Window2, Report.examiner_details, header_name="Examiner Details:", padx_details=10)
         self.QAForm_Examiner.pack(anchor="nw")
 
         # --------------------------------------------------Button Frame-----------------------------------------------------------
@@ -175,7 +175,7 @@ class App(ctk.CTk):
         return time
 
     def update_elapsed_time(self):
-        if config.reset:
+        if Report.reset:
             self.elapsed_time.set("00:00:00")
         elif self.stop:
             self.endtime.insert_text(Ram_Dump.datetime.now().strftime("%H:%M:%S"))
@@ -189,11 +189,11 @@ class App(ctk.CTk):
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
         
     def progress(self):
-        if config.reset:
+        if Report.reset:
             self.progress_bar.set(0)
             self.status.configure(text="Cancelled.., Ready to Start Again")
         elif self.dump.is_alive():
-            current_size = path.getsize(config.file_path)
+            current_size = path.getsize(Report.file_path)
             progress = current_size / self.total_ram
             if progress >= 0.95:
                 progress = 0.95
@@ -218,11 +218,11 @@ class App(ctk.CTk):
         filefmt_choice = self.filefmt.get()
         specified_filename = self.file_name.get_text()
         self.captureButton.configure(state="disabled")
-        config.reset = False
+        Report.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
-        config.file_path = Ram_Dump.get_dump_file_path(filefmt_choice, specified_filename)
-        self.dump = Thread(target=Ram_Dump.dump_ram, args=(config.file_path,))
+        Report.file_path = Ram_Dump.get_dump_file_path(filefmt_choice, specified_filename)
+        self.dump = Thread(target=Ram_Dump.dump_ram, args=(Report.file_path,))
         self.dump.start()
         self.timer = Thread(target=self.start_timer)
         self.timer.start()
@@ -242,7 +242,7 @@ class App(ctk.CTk):
         result = messagebox.askyesno("Confirmation", "Do you want to Cancel?")
         if result:
             # Stop any running Processes
-            config.reset = True
+            Report.reset = True
 
             # Reset GUI components to initial state
             self.starttime.insert_text("HH:MM:SS")
@@ -253,8 +253,8 @@ class App(ctk.CTk):
 
             # Delete any created files
             time.sleep(1)
-            if path.exists(config.file_path):
-                remove(config.file_path)
+            if path.exists(Report.file_path):
+                remove(Report.file_path)
         else:
             pass
         
@@ -264,16 +264,16 @@ class App(ctk.CTk):
     def X_button(self):
         result = messagebox.askyesno("Confirmation", "Are you sure?")
         if result:
-            config.reset = True
+            Report.reset = True
             time.sleep(1)
-            if path.exists(config.file_path):
-                remove(config.file_path)
+            if path.exists(Report.file_path):
+                remove(Report.file_path)
             self.destroy()
         else:
             pass    
     def finish_clicked(self):
-        config.case_details = self.QAForm_Case.get_answers()
-        config.examiner_details = self.QAForm_Examiner.get_answers()                                                 
+        Report.case_details = self.QAForm_Case.get_answers()
+        Report.examiner_details = self.QAForm_Examiner.get_answers()                                                 
         messagebox.showinfo("Message", f"Report Generated! \n \n Location: \n {Ram_Dump.output}")
         self.destroy()
         
