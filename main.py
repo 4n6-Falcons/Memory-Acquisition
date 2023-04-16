@@ -23,7 +23,8 @@ class InfoBox(ctk.CTkFrame):
         # Create the info Entry
         self.info_Entry = ctk.CTkEntry(self, justify=info_justify, textvariable=info_var, placeholder_text=info_placeholder, width=info_width)
         self.info_Entry.pack(side="bottom", fill=info_fill)
-        self.info_Entry.insert(0, info)
+        if not info == "":
+            self.info_Entry.insert(0, info)
         self.info_Entry.configure(state=self.info_state)
 
     def insert_text(self, text):
@@ -31,8 +32,12 @@ class InfoBox(ctk.CTkFrame):
         self.info_Entry.delete(0, "end")
         self.info_Entry.insert(0, text)
         self.info_Entry.configure(state=self.info_state)
+    
+    def change_state(self, state):
+        self.info_Entry.configure(state=state)
 
     def get_text(self):
+        self.change_state("readonly")
         return self.info_Entry.get()
 
 class QAForm(ctk.CTkFrame):
@@ -218,6 +223,7 @@ class App(ctk.CTk):
         filefmt_choice = self.filefmt.get()
         specified_filename = self.file_name.get_text()
         self.captureButton.configure(state="disabled")
+        self.filefmt.configure(state="disabled")
         Report.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
@@ -226,7 +232,7 @@ class App(ctk.CTk):
         self.dump.start()
         self.timer = Thread(target=self.start_timer)
         self.timer.start()
-        time.sleep(0.1)
+        time.sleep(1)
         self.pro = Thread(target=self.progress)
         self.pro.start()
 
@@ -245,7 +251,9 @@ class App(ctk.CTk):
             Report.reset = True
 
             # Reset GUI components to initial state
+            self.file_name.change_state("normal")
             self.starttime.insert_text("HH:MM:SS")
+            self.filefmt.configure(state="normal")
             self.captureButton.configure(state="normal")
             self.nextButton.configure(state="disabled")
             self.cancelButton.grid_forget()
