@@ -1,6 +1,5 @@
 reset = False
 file_path = ""
-En_width = 300
 
 # Labels and entries for Case Details
 case_details = {

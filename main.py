@@ -32,12 +32,16 @@ class InfoBox(ctk.CTkFrame):
         self.info_Entry.insert(0, text)
         self.info_Entry.configure(state=self.info_state)
 
+    def get_text(self):
+        return self.info_Entry.get()
+
 class QAForm(ctk.CTkFrame):
     def __init__(self, parent, qa_dict, header_name, padx_details=0):
         super().__init__(parent, fg_color="transparent")
 
         self.labels = {}
         self.entries = {}
+        En_width = 300
 
         self.header = ctk.CTkLabel(self, text=header_name, font=("Arial", 14, "bold"))
         self.header.grid(row=0, column=0, sticky="w")
@@ -45,7 +49,7 @@ class QAForm(ctk.CTkFrame):
         for i, (q, a) in enumerate(qa_dict.items()):
             self.labels[q] = ctk.CTkLabel(self, text=q + ":")
             self.labels[q].grid(row=i+1, column=0, padx=20, pady=2, sticky="w")
-            self.entries[q] = ctk.CTkEntry(self, width=config.En_width)
+            self.entries[q] = ctk.CTkEntry(self, width=En_width)
             self.entries[q].grid(row=i+1, column=1, padx=padx_details, pady=2)
             if a:
                 self.entries[q].insert(0, a)
@@ -120,7 +124,7 @@ class App(ctk.CTk):
         self.elapsedtime = InfoBox(self.Window1, title="Elapsed Time:", info_var=self.elapsed_time)
         self.elapsedtime.grid(row=3, column=2)
 
-        self.osdect = InfoBox(self.Window1, title="Detected OS:", info=Ram_Dump.OS, info_width=180)
+        self.osdect = InfoBox(self.Window1, title="Detected OS:", info=Ram_Dump.os_name, info_width=180)
         self.osdect.grid(row=3, column=3)
 
         # --------------------------------------------------Window2 Frame-----------------------------------------------------------
@@ -212,7 +216,7 @@ class App(ctk.CTk):
     def capture_clicked(self):
         self.stop = False
         filefmt_choice = self.filefmt.get()
-        specified_filename = self.file_name.get()
+        specified_filename = self.file_name.get_text()
         self.captureButton.configure(state="disabled")
         config.reset = False
         self.closeButton.grid_forget()
@@ -241,6 +245,7 @@ class App(ctk.CTk):
             config.reset = True
 
             # Reset GUI components to initial state
+            self.starttime.insert_text("HH:MM:SS")
             self.captureButton.configure(state="normal")
             self.nextButton.configure(state="disabled")
             self.cancelButton.grid_forget()
