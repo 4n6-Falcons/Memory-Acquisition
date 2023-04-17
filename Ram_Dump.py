@@ -1,45 +1,71 @@
 #!/usr/bin/env python
-from sys import platform, exit
-from subprocess import run
-from os import makedirs, getcwd
+import sys
+import subprocess
+import os
 from datetime import datetime
+import Report
+import time
 
 # get the current working directory
-cwd = getcwd()
+cwd = os.getcwd()
+output = f"{cwd}\\Output\\"
 
-def dump_ram():
-    # create the "Output" folder if it doesn't exist
-    makedirs("Output", exist_ok=True)
-    
-    # create a file name with current date and time
+def resource_path(relative_path):
+    """ Get absolute path to resource, works for dev and for PyInstaller """
+    try:
+        # PyInstaller creates a temp folder and stores path in _MEIPASS
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.abspath(".")
+
+    return os.path.join(base_path, relative_path)
+
+def get_dump_file_path(filefmt_choice, specified_filename):
+    """Create a file path with current date and time"""
+    os.makedirs("Output", exist_ok=True)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-    file_name = f"memdump_{current_time}.raw" 
 
-    # create a file path relative to the current working directory
-    file_path = f"{cwd}/Output/{file_name}" #File path with date and time stamp
-        
-    # Check the current operating system
-    if platform.startswith('win'):
-        # Execute the Windows RAM dump code
-        process = run(['./tools/winpmem_mini_x64_rc2.exe', file_path])
-        
-    elif platform.startswith('linux'):
-        # Execute the Linux RAM dump code
-        process = run(['./tools/avml-minimal', file_path], check=True)
-        
-    elif platform.startswith('darwin'):
-        # Execute the Mac RAM dump code
-        pass
+    filefmt_choice = ".raw" if filefmt_choice == "Default (.raw)" else filefmt_choice
     
+    if specified_filename:
+        file_name = specified_filename
     else:
-        print("Unsupported operating system")
-        exit(1)
+        file_name = f"memdump_{current_time}"
+        
+    file_path = output + file_name + filefmt_choice#File path with date and time stamp
+    return file_path
 
-def main():
-    # Start the process to collect the RAM dump
-    print("Starting RAM dump collection...")
-    dump_ram()
-    print("RAM dump saved")
+def detect_os():
+    """Detect the current operating system"""
+    global command
+    if sys.platform.startswith('win'):
+        command = [resource_path('tools/winpmem_mini_x64_rc2.exe')]
+        return 'Windows'
+    elif sys.platform.startswith('linux'):
+        command = ['./tools/avml-minimal']
+        return 'Linux'
+    elif sys.platform.startswith('darwin'):
+        command = None
+        return 'Mac OS'
+    else:
+        raise OSError("Unsupported operating system")
+    
+startupinfo = subprocess.STARTUPINFO()
+startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+startupinfo.wShowWindow = subprocess.SW_HIDE
+
+os_name = detect_os()
+print(command)
+    
+def dump_ram(file_path):
+    """Dump the contents of RAM to a file."""
+    process = subprocess.Popen(command + [file_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE, startupinfo=startupinfo)
+
+    while process.poll() is None:
+        if Report.reset:
+            process.kill()
+        time.sleep(0.1)
+
 
 if __name__ == "__main__":
-    main()
+    dump_ram(Report.file_path)
