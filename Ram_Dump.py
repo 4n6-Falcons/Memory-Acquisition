@@ -107,7 +107,7 @@ end_time = ""
 
 def generate_report(filefmt_choice):
     os.makedirs("Output", exist_ok=True)
-    open(f'Output/{file_name}_report.txt', 'w').write('')
+    open(f'Output/Report_{file_name}.txt', 'w').write('')
     with open(file_path, "rb") as f:
         contents = f.read()
         md5_hash = hashlib.md5(contents).hexdigest()
