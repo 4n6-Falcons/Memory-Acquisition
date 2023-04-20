@@ -142,7 +142,7 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
 
 	File Name: {file_name}
 	File Format: {specified_file_format}
-	File Size: {file_size} KB
+	File Size: {file_size} GB
 	File Location: {file_path}
 
 	MD5 Hash: {md5_hash}
@@ -199,8 +199,8 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         file_name=file_name,
         file_path=file_path,
         specified_file_format=filefmt_choice,
-        file_size=os.path.getsize(
-            file_path),
+        file_size=(os.path.getsize(
+            file_path)/1024 ** 3),
         md5_hash=md5_hash,
         sha1_hash=sha1_hash,
         sha256_hash=sha256_hash,
