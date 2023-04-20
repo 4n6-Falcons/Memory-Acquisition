@@ -53,14 +53,12 @@ def detect_os():
 
 
 def get_dump_file_path(filefmt_choice, specified_filename):
+    """Create a file path with current date and time"""
     global file_name
     global formatted_date
-    """Create a file path with current date and time"""
     os.makedirs("Output", exist_ok=True)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     formatted_date = datetime.now().strftime("%A %d %B %Y %H:%M:%S")
-
-    filefmt_choice = ".raw" if filefmt_choice == "Default (.raw)" else filefmt_choice
 
     if specified_filename:
         file_name = specified_filename

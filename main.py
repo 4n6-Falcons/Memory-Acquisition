@@ -217,7 +217,7 @@ class App(ctk.CTk):
             self.elapsed_time.set("00:00:00")
         elif self.stop:
             Ram_Dump.end_time = Ram_Dump.datetime.now().strftime("%A %d %B %Y %H:%M:%S")
-            self.endtime.insert_text(Ram_Dump.end_time)
+            self.endtime.insert_text(Ram_Dump.end_time[-8:])
         else:
             elapsed_seconds = int(Ram_Dump.time.time() - self.start_time)
             Ram_Dump.elapsed_time = self.time_convert(elapsed_seconds)
@@ -259,6 +259,7 @@ class App(ctk.CTk):
         self.stop = False
         global filefmt_choice, specified_filename
         filefmt_choice = self.filefmt.get()
+        filefmt_choice = ".raw" if filefmt_choice == "Default (.raw)" else filefmt_choice
         specified_filename = self.file_name.get_text()
         self.captureButton.configure(state="disabled")
         self.filefmt.configure(state="disabled")
@@ -328,7 +329,7 @@ class App(ctk.CTk):
         Ram_Dump.generate_report(
             filefmt_choice)
         messagebox.showinfo(
-            "Message", f"Ram_Dump Generated! \n \n Location: \n {Ram_Dump.output}")
+            "Message", f"Report Generated! \n \n Location: \n {Ram_Dump.output}")
         self.destroy()
 
 
