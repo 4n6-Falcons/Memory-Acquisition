@@ -66,7 +66,9 @@ class App(ctk.CTk):
         appwidth, appheight = 550, 380
 
         self.title("4n6 Dump Acquisition")
-        self.iconbitmap(Ram_Dump.resource_path("icon.ico"))
+        if Ram_Dump.os_name == "Windows":
+            Ram_Dump.output = f"{Ram_Dump.cwd}\\Output\\"
+            self.iconbitmap(Ram_Dump.resource_path("icon.ico"))
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False,False)
         self.protocol("WM_DELETE_WINDOW", self.X_button)

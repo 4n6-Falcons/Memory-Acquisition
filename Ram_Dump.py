@@ -7,7 +7,7 @@ import time
 
 # get the current working directory
 cwd = os.getcwd()
-output = f"{cwd}\\Output\\"
+output = f"{cwd}/Output/"
 
 reset = False
 file_path = ""
