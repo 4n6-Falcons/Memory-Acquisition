@@ -101,13 +101,9 @@ examiner_details = {
     "Organization": ""
 }
 
-elapsed_time = ""
-end_time = ""
-
 # Insert your report creation function here
 elapsed_time = ""
 end_time = ""
-
 
 def generate_report(filefmt_choice):
     os.makedirs("Output", exist_ok=True)
@@ -134,10 +130,12 @@ def generate_report(filefmt_choice):
 --------------xx Memory Acquisition Report xx--------------
 Report Created By 4n6 Memory Acquisition Tool v1.0
 -----------------------------------------------------------
+
 [Case Details:]
     Number:      {case_number}
     Name:        {case_name}
     Description: {case_description}
+    
 [Examiner Details:]
     Name:         {examiner_name}
     Phone No.:    {examiner_phone}
@@ -166,6 +164,7 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
 	Elapsed Time: {elapsed_time}
 
 -----------------------------------------------------------
+
 [Target Device Information:]
 
     System Name: {system_name}
@@ -207,21 +206,17 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         file_name=file_name,
         file_path=file_path,
         specified_file_format=filefmt_choice,
-        file_size=(os.path.getsize(
-            file_path)/1024 ** 3),
+        file_size=(os.path.getsize(file_path)/1024 ** 3),
         md5_hash=md5_hash,
         sha1_hash=sha1_hash,
         sha256_hash=sha256_hash,
         current_time=formatted_date,
         end_time=end_time,
         elapsed_time=elapsed_time,
-
-
     )
 
     with open("Output/report.txt", "w") as f:
         f.write(report)
-
 
 if __name__ == "__main__":
     dump_ram(file_path)
