@@ -8,7 +8,7 @@ To install the 4n6 Memory Acquisition Tool, follow these steps:
 
 1. Clone the project repository from GitHub.
 ```sh
-git clone https://github.com/your-username/ram-dump-tool.git
+git clone https://github.com/Aditya4703/Memory-Acquisition.git
 ```
 
 2. Install the required packages from the requirements.txt file.
