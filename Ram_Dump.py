@@ -85,6 +85,9 @@ examiner_details = {
     "Organization": ""
 }
 
+elapsed_time = ""
+end_time = ""
+
 # Insert your report creation function here
 
 if __name__ == "__main__":

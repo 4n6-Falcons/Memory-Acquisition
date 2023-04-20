@@ -180,10 +180,12 @@ class App(ctk.CTk):
         if Ram_Dump.reset:
             self.elapsed_time.set("00:00:00")
         elif self.stop:
-            self.endtime.insert_text(Ram_Dump.datetime.now().strftime("%H:%M:%S"))
+            Ram_Dump.end_time = Ram_Dump.datetime.now().strftime("%H:%M:%S")
+            self.endtime.insert_text(Ram_Dump.end_time)
         else:
             elapsed_seconds = int(Ram_Dump.time.time() - self.start_time)
-            self.elapsed_time.set(self.time_convert(elapsed_seconds))
+            Ram_Dump.elapsed_time = self.time_convert(elapsed_seconds)
+            self.elapsed_time.set(Ram_Dump.elapsed_time)
             self.after(1000, self.update_elapsed_time) # update every second
 
     def switch_frame(self):
