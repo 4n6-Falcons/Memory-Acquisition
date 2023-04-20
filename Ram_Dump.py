@@ -24,14 +24,20 @@ def resource_path(relative_path):
 
 def detect_os():
     """Detect the current operating system"""
+    global startupinfo
     global command
     if sys.platform.startswith('win'):
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
         command = [resource_path('tools/winpmem_mini_x64_rc2.exe')]
         return 'Windows'
     elif sys.platform.startswith('linux'):
+        startupinfo = None
         command = ['./tools/avml-minimal']
         return 'Linux'
     elif sys.platform.startswith('darwin'):
+        startupinfo = None
         command = None
         return 'Mac OS'
     else:
@@ -51,10 +57,6 @@ def get_dump_file_path(filefmt_choice, specified_filename):
         
     file_path = output + file_name + filefmt_choice#File path with date and time stamp
     return file_path
-    
-startupinfo = subprocess.STARTUPINFO()
-startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-startupinfo.wShowWindow = subprocess.SW_HIDE
 
 os_name = detect_os()
 print(command)
