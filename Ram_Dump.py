@@ -7,6 +7,7 @@ import time
 import psutil
 import platform
 import hashlib
+import socket
 
 # get the current working directory
 cwd = os.getcwd()
@@ -185,7 +186,7 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         examiner_phone=examiner_details["Phone Number"],
         examiner_email=examiner_details["Email Id"],
         examiner_organization=examiner_details["Organization"],
-        system_name=system_name,
+        system_name=socket.gethostname(),
         system_id=system_id,
         system_manufacturer=system_manufacturer,
         system_model=system_model,
