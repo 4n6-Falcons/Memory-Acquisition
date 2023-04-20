@@ -8,6 +8,7 @@ import psutil
 import platform
 import hashlib
 import socket
+import wmi
 
 # get the current working directory
 cwd = os.getcwd()
@@ -100,20 +101,22 @@ examiner_details = {
 }
 
 # Insert your report creation function here
+elapsed_time = ""
+end_time = ""
 
 
-def generate_report(case_details, examiner_details, filefmt_choice, ):
-
+def generate_report(filefmt_choice):
+    os.makedirs("Output", exist_ok=True)
+    open('Output/report.txt', 'w').write('')
     with open("Output/report.txt", "rb") as f:
         contents = f.read()
         md5_hash = hashlib.md5(contents).hexdigest()
         sha1_hash = hashlib.sha1(contents).hexdigest()
         sha256_hash = hashlib.sha256(contents).hexdigest()
 
-    system_name = platform.system()
     system_id = platform.node()
     system_manufacturer = platform.system()
-    system_model = platform.machine()
+
     system_architecture = platform.architecture()[0]
 
     os_name = platform.system()
@@ -155,8 +158,8 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
 [Acquisition Details:]
 	
 	Start Time: {current_time}
-	End Time: 
-	Elapsed Time: 
+	End Time: {end_time}
+	Elapsed Time: {elapsed_time}
 
 -----------------------------------------------------------
 [Target Device Information:]
@@ -189,7 +192,7 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         system_name=socket.gethostname(),
         system_id=system_id,
         system_manufacturer=system_manufacturer,
-        system_model=system_model,
+        system_model=wmi.WMI().Win32_ComputerSystem()[0].Model,
         system_architecture=system_architecture,
         os_name=os_name,
         os_version=os_version,
@@ -206,6 +209,9 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         sha1_hash=sha1_hash,
         sha256_hash=sha256_hash,
         current_time=formatted_date,
+        end_time=end_time,
+        elapsed_time=elapsed_time,
+
 
     )
 

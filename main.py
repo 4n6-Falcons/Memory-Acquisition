@@ -214,12 +214,13 @@ class App(ctk.CTk):
         if Ram_Dump.reset:
             self.elapsed_time.set("00:00:00")
         elif self.stop:
-            self.endtime.insert_text(
-                Ram_Dump.datetime.now().strftime("%H:%M:%S"))
+            Ram_Dump.end_time = Ram_Dump.datetime.now().strftime("%A %d %B %Y %H:%M:%S")
+            self.endtime.insert_text(Ram_Dump.end_time)
         else:
             elapsed_seconds = int(Ram_Dump.time.time() - self.start_time)
-            self.elapsed_time.set(self.time_convert(elapsed_seconds))
-            self.after(1000, self.update_elapsed_time)  # update every second
+            Ram_Dump.elapsed_time = self.time_convert(elapsed_seconds)
+            self.elapsed_time.set(Ram_Dump.elapsed_time)
+            self.after(1000, self.update_elapsed_time)
 
     def switch_frame(self):
         self.Window1.pack_forget()
@@ -323,7 +324,7 @@ class App(ctk.CTk):
         Ram_Dump.examiner_details = self.QAForm_Examiner.get_answers()
 
         Ram_Dump.generate_report(
-            Ram_Dump.case_details, Ram_Dump.examiner_details, filefmt_choice)
+            filefmt_choice)
         messagebox.showinfo(
             "Message", f"Ram_Dump Generated! \n \n Location: \n {Ram_Dump.output}")
         self.destroy()
