@@ -71,6 +71,7 @@ def get_dump_file_path(filefmt_choice, specified_filename):
     file_path = output + file_name + filefmt_choice
     return file_path
 
+
 os_name = detect_os()
 print(command)
 
@@ -105,10 +106,11 @@ examiner_details = {
 elapsed_time = ""
 end_time = ""
 
+
 def generate_report(filefmt_choice):
     os.makedirs("Output", exist_ok=True)
-    open('Output/report.txt', 'w').write('')
-    with open("Output/report.txt", "rb") as f:
+    open(f'Output/{file_name}_report.txt', 'w').write('')
+    with open(file_path, "rb") as f:
         contents = f.read()
         md5_hash = hashlib.md5(contents).hexdigest()
         sha1_hash = hashlib.sha1(contents).hexdigest()
@@ -215,8 +217,9 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         elapsed_time=elapsed_time,
     )
 
-    with open("Output/report.txt", "w") as f:
+    with open(f"Output/{file_name}_report.txt", "w") as f:
         f.write(report)
+
 
 if __name__ == "__main__":
     dump_ram(file_path)
