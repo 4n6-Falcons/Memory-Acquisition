@@ -75,7 +75,9 @@ class App(ctk.CTk):
         appwidth, appheight = 550, 380
 
         self.title("4n6 Dump Acquisition")
-        self.iconbitmap(Ram_Dump.resource_path("icon.ico"))
+        if Ram_Dump.os_name == "Windows":
+            Ram_Dump.output = f"{Ram_Dump.cwd}\\Output\\"
+            self.iconbitmap(Ram_Dump.resource_path("icon.ico"))
         self.geometry(f"{appwidth}x{appheight}")
         self.resizable(False, False)
         self.protocol("WM_DELETE_WINDOW", self.X_button)
@@ -220,7 +222,7 @@ class App(ctk.CTk):
             elapsed_seconds = int(Ram_Dump.time.time() - self.start_time)
             Ram_Dump.elapsed_time = self.time_convert(elapsed_seconds)
             self.elapsed_time.set(Ram_Dump.elapsed_time)
-            self.after(1000, self.update_elapsed_time)
+            self.after(1000, self.update_elapsed_time) # update every second
 
     def switch_frame(self):
         self.Window1.pack_forget()

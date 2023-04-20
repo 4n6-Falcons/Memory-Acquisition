@@ -12,7 +12,7 @@ import wmi
 
 # get the current working directory
 cwd = os.getcwd()
-output = f"{cwd}\\Output\\"
+output = f"{cwd}/Output/"
 
 
 reset = False
@@ -32,14 +32,20 @@ def resource_path(relative_path):
 
 def detect_os():
     """Detect the current operating system"""
+    global startupinfo
     global command
     if sys.platform.startswith('win'):
+        startupinfo = subprocess.STARTUPINFO()
+        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        startupinfo.wShowWindow = subprocess.SW_HIDE
         command = [resource_path('tools/winpmem_mini_x64_rc2.exe')]
         return 'Windows'
     elif sys.platform.startswith('linux'):
+        startupinfo = None
         command = ['./tools/avml-minimal']
         return 'Linux'
     elif sys.platform.startswith('darwin'):
+        startupinfo = None
         command = None
         return 'Mac OS'
     else:
@@ -64,11 +70,6 @@ def get_dump_file_path(filefmt_choice, specified_filename):
     # File path with date and time stamp
     file_path = output + file_name + filefmt_choice
     return file_path
-
-
-startupinfo = subprocess.STARTUPINFO()
-startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-startupinfo.wShowWindow = subprocess.SW_HIDE
 
 os_name = detect_os()
 print(command)
@@ -99,6 +100,9 @@ examiner_details = {
     "Email Id": "",
     "Organization": ""
 }
+
+elapsed_time = ""
+end_time = ""
 
 # Insert your report creation function here
 elapsed_time = ""
