@@ -7,8 +7,6 @@ import time
 import psutil
 import platform
 import hashlib
-import socket
-import wmi
 
 # get the current working directory
 cwd = os.getcwd()
@@ -32,19 +30,51 @@ def resource_path(relative_path):
 
 def detect_os():
     """Detect the current operating system"""
-    global startupinfo
-    global command
+    global startupinfo, system_model, command, system_manufacturer, os_build
+    os_build = ""
     if sys.platform.startswith('win'):
+        import wmi
+        c = wmi.WMI()
+        system_manufacturer = c.Win32_ComputerSystem()[0].Manufacturer
+        system_model = c.Win32_ComputerSystem()[0].Model
+        os_build = c.Win32_OperatingSystem()[0].BuildNumber
+
         startupinfo = subprocess.STARTUPINFO()
         startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
         startupinfo.wShowWindow = subprocess.SW_HIDE
         command = [resource_path('tools/winpmem_mini_x64_rc2.exe')]
         return 'Windows'
     elif sys.platform.startswith('linux'):
+        try:
+            output = subprocess.check_output(['dmidecode', '-t', 'system'], stderr=subprocess.DEVNULL)
+            output = output.decode('utf-8').split('\n')
+            for line in output:
+                if 'Manufacturer' in line:
+                    system_manufacturer = line.split(': ')[1].strip()
+                elif 'Product Name' in line:
+                    system_model = line.split(': ')[1].strip()
+        except Exception as e:
+            print("Error retrieving system information using dmidecode:", str(e))
+            print("Falling back to platform.uname().machine.")
+            system_manufacturer = ''
+            system_model = platform.uname().machine
+
         startupinfo = None
         command = ['./tools/avml-minimal']
         return 'Linux'
     elif sys.platform.startswith('darwin'):
+        try:
+            output = subprocess.check_output(['system_profiler', 'SPHardwareDataType'], stderr=subprocess.DEVNULL)
+            output = output.decode('utf-8').split('\n')
+            for line in output:
+                if 'Model Name' in line:
+                    system_model = line.split(': ')[1].strip()
+        except Exception as e:
+            print("Error retrieving system information using system_profiler:", str(e))
+            print("Falling back to platform.uname().machine.")
+            system_model = platform.uname().machine
+
+        system_manufacturer = "Apple Inc."
         startupinfo = None
         command = None
         return 'Mac OS'
@@ -143,16 +173,12 @@ def generate_report(filefmt_choice):
     os.makedirs("Output", exist_ok=True)
     open(Report_file, 'w').write('')
 
-    system_id = platform.node()
-    system_manufacturer = platform.system()
-
+    system_name = platform.node()
     system_architecture = platform.architecture()[0]
 
     os_name = platform.system()
     os_version = platform.version()
-    os_build = platform.platform()
 
-    installed_memory = f"{psutil.virtual_memory().available / 1024**3:.2f} GB"
     total_physical_memory = f"{psutil.virtual_memory().total / 1024**3:.2f} GB"
     total_virtual_memory = f"{psutil.swap_memory().total / 1024**3:.2f} GB"
     report_template = """
@@ -197,7 +223,6 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
 [Target Device Information:]
 
     System Name: {system_name}
-    System Id: {system_id}
     System Manufacturer: {system_manufacturer}
     System Model: {system_model}
     System Architecture: {system_architecture}
@@ -206,7 +231,6 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
     OS Version: {os_version}
     OS Build: {os_build}
 
-    Installed Physical Memory (RAM) : {installed_memory}
     Total Physical Memory: {total_physical_memory}
     Total Virtual Memory: {total_virtual_memory}
 
@@ -221,15 +245,13 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         examiner_phone=examiner_details["Phone Number"],
         examiner_email=examiner_details["Email Id"],
         examiner_organization=examiner_details["Organization"],
-        system_name=socket.gethostname(),
-        system_id=system_id,
+        system_name=system_name,
         system_manufacturer=system_manufacturer,
-        system_model=wmi.WMI().Win32_ComputerSystem()[0].Model,
+        system_model=system_model,
         system_architecture=system_architecture,
         os_name=os_name,
         os_version=os_version,
         os_build=os_build,
-        installed_memory=installed_memory,
         total_physical_memory=total_physical_memory,
         total_virtual_memory=total_virtual_memory,
         file_name=file_name,
