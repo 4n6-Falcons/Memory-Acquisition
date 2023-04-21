@@ -103,12 +103,10 @@ class App(ctk.CTk):
         self.file_frame = ctk.CTkFrame(self.Window1, fg_color="transparent")
         self.file_frame.grid(row=1, column=3)
 
-        self.filefmtLable = ctk.CTkLabel(
-            self.file_frame, text="Specify File Format: ", font=("Arial", 14, "bold"))
+        self.filefmtLable = ctk.CTkLabel(self.file_frame, text="Specify File Format: ", font=("Arial", 14, "bold"))
         self.filefmtLable.pack(pady=(0, 5))
 
-        self.filefmt = ctk.CTkOptionMenu(self.file_frame, anchor="center", values=[
-                                         "Default (.raw)", ".dd", ".bin"], width=180)
+        self.filefmt = ctk.CTkOptionMenu(self.file_frame, anchor="center", values=["Default (.raw)", ".dd", ".bin"], width=180)
         self.filefmt.pack()
 
         # Status Frame
@@ -228,6 +226,23 @@ class App(ctk.CTk):
         self.Window1.pack_forget()
         self.Window2.pack(padx=20, pady=10, anchor="nw", fill="x")
 
+    def hash_progress(self):
+        if Ram_Dump.reset:
+            self.progress_bar.configure(mode="determinate")
+            self.progress_bar.set(0)
+        elif self.hash_md5.is_alive() or self.hash_sha1.is_alive() or self.hash_sha256.is_alive():
+            self.after(100, self.hash_progress)
+        else:
+            self.progress_bar.stop()
+            self.progress_bar.configure(mode="determinate")
+            self.progress_bar.set(1)
+            self.status.configure(text="Process Completed!")
+            messagebox.showinfo("Message", "Process Completed!")
+            self.nextButton.configure(state="normal")
+            self.cancelButton.grid_forget()
+            self.closeButton.grid(row=0, column=2, padx=10)
+            self.closeButton.configure(state="disabled")
+
     def progress(self):
         if Ram_Dump.reset:
             self.progress_bar.set(0)
@@ -235,25 +250,26 @@ class App(ctk.CTk):
         elif self.dump.is_alive():
             current_size = Ram_Dump.os.path.getsize(Ram_Dump.file_path)
             progress = current_size / self.total_ram
-            if progress >= 0.95:
-                progress = 0.95
+            progress = min(progress, 0.95)  # Limit progress to 0.95
             progress_perct = int(progress * 100)
             self.progress_bar.set(progress)
-            self.status.configure(
-                text=f"Dumping.., Please Wait... [ {progress_perct} % ]")
+            self.status.configure(text=f"Dumping.., Please Wait... [ {progress_perct} % ]")
             self.update_idletasks()
-            self.after(100)
-            self.progress()
+            self.after(100, self.progress)
         else:
             self.progress_bar.set(1)
             self.stop = True
-            self.status.configure(text=f"Dump Created Successfully!")
-            # display a popup message
-            messagebox.showinfo("Message", "Process Completed!")
-            self.nextButton.configure(state="normal")
-            self.cancelButton.grid_forget()
-            self.closeButton.grid(row=0, column=2, padx=10)
-            self.closeButton.configure(state="disabled")
+            self.status.configure(text="Dump Created Successfully!, Calculating the Hashes...")
+            self.hash_md5 = Thread(target=Ram_Dump.calculate_file_hash, args=(Ram_Dump.hash_result, "md5", Ram_Dump.file_path))
+            self.hash_sha1 = Thread(target=Ram_Dump.calculate_file_hash, args=(Ram_Dump.hash_result, "sha1", Ram_Dump.file_path))
+            self.hash_sha256 = Thread(target=Ram_Dump.calculate_file_hash, args=(Ram_Dump.hash_result, "sha256", Ram_Dump.file_path))
+            Ram_Dump.time.sleep(1)
+            self.progress_bar.configure(mode="indeterminate")
+            self.progress_bar.start()
+            self.hash_md5.start()
+            self.hash_sha1.start()
+            self.hash_sha256.start()
+            self.hash_progress()
 
     def capture_clicked(self):
         self.stop = False
@@ -266,17 +282,12 @@ class App(ctk.CTk):
         Ram_Dump.reset = False
         self.closeButton.grid_forget()
         self.cancelButton.grid(row=0, column=2, padx=10)
-        Ram_Dump.file_path = Ram_Dump.get_dump_file_path(
-            filefmt_choice, specified_filename)
-        self.dump = Thread(target=Ram_Dump.dump_ram,
-                           args=(Ram_Dump.file_path,))
+        Ram_Dump.file_path = Ram_Dump.get_dump_file_path(filefmt_choice, specified_filename)
+        self.dump = Thread(target=Ram_Dump.dump_ram, args=(Ram_Dump.file_path,))
         self.dump.start()
-        self.timer = Thread(target=self.start_timer)
-        print("Timer Started")
-        self.timer.start()
+        self.start_timer()
         Ram_Dump.time.sleep(1)
-        self.pro = Thread(target=self.progress)
-        self.pro.start()
+        self.progress()
 
     def next_clicked(self):
         self.switch_frame()

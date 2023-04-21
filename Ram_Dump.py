@@ -56,6 +56,7 @@ def get_dump_file_path(filefmt_choice, specified_filename):
     """Create a file path with current date and time"""
     global file_name
     global formatted_date
+    global Report_file
     os.makedirs("Output", exist_ok=True)
     current_time = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
     formatted_date = datetime.now().strftime("%A %d %B %Y %H:%M:%S")
@@ -66,6 +67,7 @@ def get_dump_file_path(filefmt_choice, specified_filename):
         file_name = f"memdump_{current_time}"
 
     # File path with date and time stamp
+    Report_file = f'Output/Report_{file_name}.txt'
     file_path = output + file_name + filefmt_choice
     return file_path
 
@@ -104,15 +106,42 @@ examiner_details = {
 elapsed_time = ""
 end_time = ""
 
+hash_result = {}
+
+# Function to calculate the hash of a file
+def calculate_file_hash(result, hash_algorithm, filename):
+    """
+    Calculate the hash of a file using the specified hash algorithm.
+    :param filename: The name of the file to calculate the hash for.
+    :param hash_algorithm: The hash algorithm to use. Default is "sha256".
+    :return: The hash value as a hexadecimal string.
+    """
+    try:
+        # Open the file in binary mode for reading
+        with open(filename, 'rb') as file:
+            # Create the hash object
+            hash_obj = hashlib.new(hash_algorithm)
+
+            # Read the file in chunks to avoid memory issues
+            chunk_size = 4096
+            while True:
+                data = file.read(chunk_size)
+                if not data:
+                    break
+                hash_obj.update(data)
+
+            # Return the hexadecimal representation of the hash
+            result[hash_algorithm] = hash_obj.hexdigest()
+    except FileNotFoundError:
+        print(f"File '{filename}' not found.")
+    except PermissionError:
+        print(f"Permission denied to read file '{filename}'.")
+    except Exception as e:
+        print(f"Error while calculating hash for file '{filename}': {e}")
 
 def generate_report(filefmt_choice):
     os.makedirs("Output", exist_ok=True)
-    open(f'Output/Report_{file_name}.txt', 'w').write('')
-    with open(file_path, "rb") as f:
-        contents = f.read()
-        md5_hash = hashlib.md5(contents).hexdigest()
-        sha1_hash = hashlib.sha1(contents).hexdigest()
-        sha256_hash = hashlib.sha256(contents).hexdigest()
+    open(Report_file, 'w').write('')
 
     system_id = platform.node()
     system_manufacturer = platform.system()
@@ -207,15 +236,15 @@ Report Created By 4n6 Memory Acquisition Tool v1.0
         file_path=file_path,
         specified_file_format=filefmt_choice,
         file_size=(os.path.getsize(file_path)/1024 ** 3),
-        md5_hash=md5_hash,
-        sha1_hash=sha1_hash,
-        sha256_hash=sha256_hash,
+        md5_hash=hash_result["md5"],
+        sha1_hash=hash_result["sha1"],
+        sha256_hash=hash_result["sha256"],
         current_time=formatted_date,
         end_time=end_time,
         elapsed_time=elapsed_time,
     )
 
-    with open(f"Output/{file_name}_report.txt", "w") as f:
+    with open(Report_file, "w") as f:
         f.write(report)
 
 
